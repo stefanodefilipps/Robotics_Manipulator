@@ -30,13 +30,13 @@ Manipulator(MatrixXf& dh): nJoints{static_cast<int>(dh.rows())},DH{dh} {
  * |                                                    |
  * v                                                    v
  */
-Vector3f dKin(const std::vector<float>& vars,const int i = 1) const {
+Vector3f dKin(const std::vector<float>& vars,const int upToNJoint = 0,const int i = 0) const {
 
 	MatrixXf S(3,4);
 	S << 1, 0, 0, 0,
 		 0, 1, 0, 0,
 		 0, 0, 1, 0;
-	return S*dKinAlg(vars,i);
+	return S*dKinAlg(vars,upToNJoint,i);
 }
 
 // TASK JACOBIAN FOR POSITIONING TASKS IN THEE 3D SPACE -> TODO: UPGRADE FOR GENERAL TASK
@@ -44,7 +44,9 @@ MatrixXf jacobian(const std::vector<float>& q0, float eps = 0.00001) const; /*DO
 
 private:
 // DIRECT KINEMATICS
-Vector4f dKinAlg(const std::vector<float>& vars,const int i = 1) const; /*DONE & WORKS*/
+Vector4f dKinAlg(const std::vector<float>& vars, int upToNJoin,const int i) const; /*DONE & WORKS*/
+Matrix4f HTMat(const float var, const int i) const;
+Matrix3f RMat(const float var, const int i) const;
 
 // CHARACTERISTICS
 const int nJoints{0};
