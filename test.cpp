@@ -33,6 +33,12 @@ int main() {
 	cout << "Manipulator direct kinematics in the given configuration is: "<< endl;
 	cout << man.dKin(v) << endl;
 	cout << "\nManipulator jacobian in the given configuration: " << endl;
-	cout << man.jacobian(v) << endl;
+	cout << man.jacobian(v) << endl; 
+	
+	cout << "Manipulator direct kinematics up to joint 2: "<< endl;
+	cout << man.dKin(v,2) << endl;
+	
+	cout << "Manipulator direct kinematics from 2 to 3: "<< endl;
+	cout << man.dKin(v,3,2) << endl;
 }
 
