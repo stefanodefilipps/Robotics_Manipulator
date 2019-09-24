@@ -7,6 +7,47 @@ Write me @ menchetti.1713013@studenti.uniroma1.it
 */
 
 #include"Manipulator.h"
+#include <iostream>
+using namespace std;
+
+MatrixXf Manipulator::GeomJacAngularPrivate(const std::vector<float>& vars) const {
+    MatrixXf v(3,1);
+    MatrixXf temp = MatrixXf::Identity(3,3);
+    v << 0,
+    	 0,
+    	 1;
+	Matrix3f H;
+	MatrixXf GeometricAngularJacobian(3,nJoints);
+	
+	if(vars.size() != nJoints) {
+		std::cout << "Error\n";
+		return v;
+	}
+
+	for(int i = 0; i < vars.size(); ++i){
+		float al{DH(i,0)};
+	   	float  a{DH(i,1)};
+	   	float  d{( DH(i,3) == 1 ? DH(i,2) : vars[i])};
+	   	float  th{( DH(i,3) == 1 ? vars[i] : DH(i,2))};
+	   	
+	   	H << cos(th), -cos(al)*sin(th),  sin(al)*sin(th),
+	   	     sin(th),  cos(al)*cos(th), -sin(al)*cos(th),
+	    		   0,          sin(al),          cos(al);
+
+
+	    if(DH(i,3) == 0){
+	    	v(2,0) = 0.0;
+	    }
+	    else{
+	    	v(2,0) = 1.0;
+	    }
+	    MatrixXf Ji = temp * v;
+	    GeometricAngularJacobian.block(0,i,3,1) = Ji;
+	    temp = temp * H;
+
+	}
+    return GeometricAngularJacobian;	   
+}
 
 /*PUBLIC*/
 

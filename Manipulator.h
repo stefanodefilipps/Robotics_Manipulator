@@ -39,8 +39,14 @@ Vector3f dKin(const std::vector<float>& vars,const int upToNJoint = 0,const int 
 	return S*dKinAlg(vars,upToNJoint,i);
 }
 
+MatrixXf GeomJacAngular(const std::vector<float>& vars) const{
+	return GeomJacAngularPrivate(vars);
+};
+
 // TASK JACOBIAN FOR POSITIONING TASKS IN THEE 3D SPACE -> TODO: UPGRADE FOR GENERAL TASK
 MatrixXf jacobian(const std::vector<float>& q0, float eps = 0.00001) const; /*DONE & WORKS*/
+
+/*MatrixXf GeomJacAngular(MatrixXf Rs, const std::vector<float>& vars,const int i = 1) const;*/
 
 private:
 // DIRECT KINEMATICS
