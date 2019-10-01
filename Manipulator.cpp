@@ -23,6 +23,16 @@ MatrixXf Manipulator::jacobian(const VectorXf& q0, float eps) const {
 	return J;
 }
 
+
+Vector3f Manipulator::eeDisVec(const VectorXf &vars, const int numberOfObstacle) const {
+	return dKin(vars) - obstPos[numberOfObstacle];
+}
+
+float Manipulator::eeDis(const VectorXf& var, const int numberOfObstacle) const {
+	Vector3f d{eeDisVec(var,numberOfObstacle)};
+	return sqrt(d.transpose()*d);
+}
+
 /*PRIVATE*/
 
 Matrix3f Manipulator::RMat(const float var, const int i) const {
@@ -72,11 +82,11 @@ Vector4f Manipulator::dKinAlg(const VectorXf& vars, int upToNJoint, const int i)
     else return v;
 }
 
-Vector3f Manipulator::eeDisVec(const Vector3f &obstPos, const VectorXf &vars) const {
-	return dKin(vars) - obstPos;
-}
+/* STATIC */
+bool Manipulator::isObstacle{0};
+std::vector<Vector3f> Manipulator::obstPos;
 
-float Manipulator::eeDis(const Vector3f& obstPos, const VectorXf& var) const {
-	Vector3f d{eeDisVec(obstPos,var)};
-	return sqrt(d.transpose()*d);
+void Manipulator::newObst(const Vector3f newPos) {
+	if(!isObstacle) isObstacle = 1;
+	obstPos.push_back(newPos);
 }

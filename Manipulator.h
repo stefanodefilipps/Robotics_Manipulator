@@ -43,8 +43,14 @@ Vector3f dKin(const VectorXf& vars,const int upToNJoint = 0,const int i = 0) con
 MatrixXf jacobian(const VectorXf& q0, float eps = 0.00001) const; /*DONE & WORKS*/
 
 //DISTANCE FROM OBSTACLE
-Vector3f eeDisVec(const Vector3f& obstPos, const VectorXf& vars) const;
-float eeDis(const Vector3f& obstPos, const VectorXf& var) const;
+Vector3f eeDisVec(const VectorXf& vars, const int numberOfObstacle = 0) const;
+float eeDis(const VectorXf& var, const int numberOfObstacle = 0) const;
+
+// OBSTACLES' POSITION KNOWN BY ANY INSTANCES OF MANIPULATOR
+static std::vector<Vector3f> obstPos;
+
+// TO ADD AN OBSTACLE TO THE STACK
+static void newObst(const Vector3f newPos);
 
 private:
 // DIRECT KINEMATICS
@@ -54,6 +60,7 @@ Matrix3f RMat(const float var, const int i) const;
 
 // CHARACTERISTICS
 const int nJoints{0};
+static bool isObstacle; // --> to verify wether there is an obstacle or not
 
 // KINEMATICS ONES
 
