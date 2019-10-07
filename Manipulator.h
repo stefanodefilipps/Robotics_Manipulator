@@ -29,7 +29,7 @@ Manipulator(MatrixXf& dh,VectorXf& q_in,float z_offset): nJoints{static_cast<int
  * |                                                    |
  * v                                                    v
  */
-Vector3f dKin(const VectorXf& vars = q,const int upToNJoint = 0,const int i = 0) const {
+Vector3f dKin(const VectorXf& vars = q,const int upToNJoint = -1,const int i = 0) const {
 
 	MatrixXf S(3,4);
 	S << 1, 0, 0, 0,
@@ -47,8 +47,7 @@ VectorXf get_state() const {
 	return q;
 }
 
-// TASK JACOBIAN FOR POSITIONING TASKS IN THEE 3D SPACE -> TODO: UPGRADE FOR GENERAL TASK
-MatrixXf jacobian(const VectorXf& q0 = q, float eps = 0.00001) const; /*DONE & WORKS*/
+MatrixXf jacobian(const VectorXf& q0 = q, float eps = 0.00001, int upToJ = -1) const; /*DONE & WORKS*/
 
 VectorXf update_configuration(const VectorXf& q_dot, const float T);
 

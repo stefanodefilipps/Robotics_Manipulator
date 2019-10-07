@@ -10,15 +10,19 @@ Write me @ menchetti.1713013@studenti.uniroma1.it
 
 VectorXf Manipulator::q;
 
-MatrixXf Manipulator::jacobian(const VectorXf& q0, float eps) const {
+MatrixXf Manipulator::jacobian(const VectorXf& q0, float eps, int upToJ) const {
+    if(upToJ == -1) upToJ = nJoints;
+    else {
+        q0.resize(upToJ); //TODO: check if it is correct
+    }
 	/*JACOBIAN DIMENTION ASSIGNEMENT*/
-	MatrixXf J(3,static_cast<int> (q0.size()));
+	MatrixXf J(3,upToJ);
 	
 	/*COLUMN WISE ASSIGNEMENT OF JACOBIAN'S ELEMENTS*/
 	for (unsigned int i{0}; i < static_cast<int> (q0.size()); i++) {
 		VectorXf qEps{q0};
 		qEps[i] = q0[i] + eps;
-		J.col(i) = (dKin(qEps) - dKin(q0))/eps;
+		J.col(i) = (dKin(qEps,upToJ) - dKin(q0,upToJ))/eps;
 	}
 	return J;
 }
@@ -52,7 +56,7 @@ Matrix4f Manipulator::HTMat(const float var, const int i) const {
 }
 
 Vector4f Manipulator::dKinAlg(const VectorXf& vars, int upToNJoint, const int i) const {
-	upToNJoint = upToNJoint == 0 ? nJoints : upToNJoint;
+	upToNJoint = upToNJoint == -1 ? nJoints : upToNJoint;
 	Vector4f v{0,0,0,1};
 	Matrix4f H;
 	
