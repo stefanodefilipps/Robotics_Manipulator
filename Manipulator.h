@@ -47,7 +47,7 @@ VectorXf get_state() const {
 	return q;
 }
 
-MatrixXf jacobian(const VectorXf& q0 = q, float eps = 0.00001, int upToJ = -1) const; /*DONE & WORKS*/
+MatrixXf jacobian(VectorXf& q0 = q, float eps = 0.00001, int upToJ = -1) const; /*DONE & WORKS*/
 
 VectorXf update_configuration(const VectorXf& q_dot, const float T);
 

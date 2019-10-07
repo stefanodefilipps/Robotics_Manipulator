@@ -10,7 +10,7 @@ Write me @ menchetti.1713013@studenti.uniroma1.it
 
 VectorXf Manipulator::q;
 
-MatrixXf Manipulator::jacobian(const VectorXf& q0, float eps, int upToJ) const {
+MatrixXf Manipulator::jacobian(VectorXf& q0, float eps, int upToJ) const {
     if(upToJ == -1) upToJ = nJoints;
     else {
         q0.resize(upToJ); //TODO: check if it is correct
