@@ -15,6 +15,13 @@ using namespace std;
 
 class FlaccoController{
 public:
+
+// OBSTACLES' POSITION KNOWN BY ANY INSTANCES OF MANIPULATOR
+static std::vector<Vector3f> obstPos;
+
+// TO ADD AN OBSTACLE TO THE STACK
+static void newObst(const Vector3f newPos);
+
 	// to the controller constructor we need to pass the terms for computing the repulsive vector magnitude:
 	// aplha_ : to shape the sigmoid curve of the magnitude
 	// rho_: the half length of the control point bounding box
@@ -42,21 +49,24 @@ public:
 
 private:
 
+static bool isObstacle; // --> to verify wether there is an obstacle or not
+
+
 	MatrixXf damped_pinv(MatrixXf J,float lam, float eps);
 
 	MatrixXf tasksPriorityMatrix(MatrixXf bF,VectorXi tasksDim,float lam,float eps);
 
 	VectorXf FlaccoPrioritySolution(vector<MatrixXf> Ji, vector<VectorXf> bi, float lam = 0.1, float eps = 0.1);
 
-	Vector3f eeDisVec(const Vector3f &obstPos, const VectorXf &Pos) const;
+	Vector3f eeDisVec(const VectorXf &Pos, const int numberOfObstacle = 0) const;
 
 	// I moved the function to compute the repulsive velocities in the controller instead that in the manipulator since they are only use in the controller scheme
 
-	float eeDis(const Vector3f& obstPos, const VectorXf& Pos) const;
+	float eeDis(const VectorXf &Pos, const int numberOfObstacle = 0) const;
 
-	float repulsiveMagnitude(const Vector3f& obstPos, const VectorXf& Pos) const;
+	float repulsiveMagnitude(const VectorXf &Pos, const int numberOfObstacle = 0) const;
 
-	Vector3f eeRepulsiveVelocity(const Vector3f& obstPos, const VectorXf& Pos) const;
+	Vector3f eeRepulsiveVelocity(const VectorXf &Pos, const int numberOfObstacle = 0) const;
 
 	float alpha;
 	float rho;

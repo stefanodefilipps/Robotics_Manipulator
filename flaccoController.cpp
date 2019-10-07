@@ -19,13 +19,17 @@ VectorXf FlaccoController::control(vector<MatrixXf> Ji, vector<VectorXf> bi, vec
 	// when we have multiple obstacles we also need to take care of that case
 
 	bi[0] = bi[0] + K * (p_ds[0] - CPs[0]);
-	bi[0] = bi[0] + eeRepulsiveVelocity(obstacles[0],CPs[0]);
+	bi[0] = bi[0] + eeRepulsiveVelocity(CPs[0]);
 	return FlaccoPrioritySolution(Ji, bi, lam, eps);
 }
 
 /* This is the function to compute the damped pseudoinverse
    - lam is the largest damping factor used near singularities
    - eps > 0 monitors the smallest singular value defining the range of the damping action*/
+
+/* STATIC */
+bool FlaccoController::isObstacle{0};
+std::vector<Vector3f> FlaccoController::obstPos;
 
 MatrixXf FlaccoController::damped_pinv(MatrixXf J,float lam, float eps){
 	JacobiSVD<MatrixXf> svd(J, ComputeFullU | ComputeFullV);
@@ -136,19 +140,19 @@ VectorXf FlaccoController::FlaccoPrioritySolution(vector<MatrixXf> Ji, vector<Ve
 	return x;
 }
 
-Vector3f FlaccoController::eeDisVec(const Vector3f &obstPos, const VectorXf &Pos) const {
-	return Pos - obstPos;
+Vector3f FlaccoController::eeDisVec(const VectorXf &Pos, const int numberOfObstacle) const {
+	return Pos - obstPos[numberOfObstacle];
 }
 
-float FlaccoController::eeDis(const Vector3f& obstPos, const VectorXf& Pos) const {
-	Vector3f d{eeDisVec(obstPos,Pos)};
+float FlaccoController::eeDis(const VectorXf &Pos, const int numberOfObstacle) const {
+	Vector3f d{eeDisVec(Pos,numberOfObstacle)};
 	return sqrt(d.transpose()*d);
 }
 
-float FlaccoController::repulsiveMagnitude(const Vector3f& obstPos, const VectorXf& Pos) const{
-	return (v_max / (1 + exp((eeDis(obstPos,Pos) * (2 / rho) -1) * alpha)));
+float FlaccoController::repulsiveMagnitude(const VectorXf &Pos, const int numberOfObstacle) const{
+	return (v_max / (1 + exp((eeDis(Pos,numberOfObstacle) * (2 / rho) -1) * alpha)));
 }
 
-Vector3f FlaccoController::eeRepulsiveVelocity(const Vector3f& obstPos, const VectorXf& Pos) const{
-	return repulsiveMagnitude(obstPos, Pos) * eeDisVec(obstPos,Pos) / eeDis(obstPos,Pos);
+Vector3f FlaccoController::eeRepulsiveVelocity(const VectorXf &Pos, const int numberOfObstacle) const{
+	return repulsiveMagnitude(Pos,numberOfObstacle) * eeDisVec(Pos,numberOfObstacle) / eeDis(Pos,numberOfObstacle);
 }

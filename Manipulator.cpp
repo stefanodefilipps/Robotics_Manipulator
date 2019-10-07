@@ -8,6 +8,8 @@ Write me @ menchetti.1713013@studenti.uniroma1.it
 
 /*PUBLIC*/
 
+VectorXf Manipulator::q;
+
 MatrixXf Manipulator::jacobian(const VectorXf& q0, float eps) const {
 	/*JACOBIAN DIMENTION ASSIGNEMENT*/
 	MatrixXf J(3,static_cast<int> (q0.size()));

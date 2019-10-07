@@ -18,8 +18,9 @@ class Manipulator {
 
 public:
 
-Manipulator(MatrixXf& dh,VectorXf& q_in,float z_offset): nJoints{static_cast<int>(dh.rows())},DH{dh},q{q_in},world_z_offset{z_offset} {
+Manipulator(MatrixXf& dh,VectorXf& q_in,float z_offset): nJoints{static_cast<int>(dh.rows())},DH{dh},world_z_offset{z_offset} {
 	if(dh.cols() != 4) std::cout << "Invalid amount of columns\n";
+	q = q_in;
 	/*NO CHECK ON THE DIMENTION YET*/
 }
 
@@ -28,7 +29,7 @@ Manipulator(MatrixXf& dh,VectorXf& q_in,float z_offset): nJoints{static_cast<int
  * |                                                    |
  * v                                                    v
  */
-Vector3f dKin(const VectorXf& vars,const int upToNJoint = 0,const int i = 0) const {
+Vector3f dKin(const VectorXf& vars = q,const int upToNJoint = 0,const int i = 0) const {
 
 	MatrixXf S(3,4);
 	S << 1, 0, 0, 0,
@@ -42,12 +43,12 @@ Vector3f dKin(const VectorXf& vars,const int upToNJoint = 0,const int i = 0) con
 	return S*W*dKinAlg(vars,upToNJoint,i);
 }
 
-VectorXf get_state(){
+VectorXf get_state() const {
 	return q;
 }
 
 // TASK JACOBIAN FOR POSITIONING TASKS IN THEE 3D SPACE -> TODO: UPGRADE FOR GENERAL TASK
-MatrixXf jacobian(const VectorXf& q0, float eps = 0.00001) const; /*DONE & WORKS*/
+MatrixXf jacobian(const VectorXf& q0 = q, float eps = 0.00001) const; /*DONE & WORKS*/
 
 VectorXf update_configuration(const VectorXf& q_dot, const float T);
 
@@ -73,7 +74,7 @@ const int nJoints{0};
  *		b) IF PRISMATIC -> "0" 
  */
 MatrixXf DH;
-VectorXf q;
+static VectorXf q;
 float world_z_offset; 
 
 // TODO: DYNAMICS ONES
