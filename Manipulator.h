@@ -18,7 +18,7 @@ class Manipulator {
 
 public:
 
-Manipulator(MatrixXf& dh,VectorXf& q_in,float z_offset): nJoints{static_cast<int>(dh.rows())},DH{dh},world_z_offset{z_offset} {
+Manipulator(const MatrixXf& dh, const VectorXf& q_in, const float z_offset = 0): nJoints{static_cast<int>(dh.rows())},DH{dh},world_z_offset{z_offset} {
 	if(dh.cols() != 4) std::cout << "Invalid amount of columns\n";
 	q = q_in;
 	/*NO CHECK ON THE DIMENTION YET*/
