@@ -14,7 +14,7 @@ int main() {
     for (int i = 0; i < 3; ++i) {
         cout << "----------------------------------------\n";
         cout << "Jacobian at " << i+1 << "-th joint is:\n";
-        cout << man.jacobian();
+        cout << man.jacobian(q0,0.5,1) << endl;
     }
 
     return 0;
