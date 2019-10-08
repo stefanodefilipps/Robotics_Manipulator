@@ -11,15 +11,12 @@
 using namespace std;
 using namespace Eigen;
 
-VectorXf FlaccoController::control(vector<MatrixXf> Ji, vector<VectorXf> bi, vector<VectorXf> obstacles, vector<VectorXf> CPs, vector<VectorXf> p_ds, float lam, float eps){
+VectorXf FlaccoController::control(vector<MatrixXf> Ji, vector<VectorXf> bi, vector<VectorXf> CPs, float lam, float eps){
 	
 	// In this function I implement a simple kinematic control of Cartisian motion con feedback for the end effector
 	// I add the repulsive velocity to the ee task velocity and in this case I have only one obstacle
 	// In the future here we need to implement the riordering of the task based on the distance of the control points from the obstacles and
 	// when we have multiple obstacles we also need to take care of that case
-
-	bi[0] = bi[0] + K * (p_ds[0] - CPs[0]);
-	bi[0] = bi[0] + eeRepulsiveVelocity(CPs[0]);
 	return FlaccoPrioritySolution(Ji, bi, lam, eps);
 }
 
