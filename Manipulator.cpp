@@ -10,11 +10,7 @@ Write me @ menchetti.1713013@studenti.uniroma1.it
 
 VectorXf Manipulator::q;
 
-MatrixXf Manipulator::jacobian(VectorXf& q0, float eps, int upToJ) const {
-    if(upToJ == -1) upToJ = nJoints;
-    else {
-        q0.resize(upToJ); //TODO: check if it is correct
-    }
+MatrixXf Manipulator::jacobian(const VectorXf& q0,int upToJ, float eps) const {
 	/*JACOBIAN DIMENTION ASSIGNEMENT*/
 	MatrixXf J(3,upToJ);
 	
@@ -66,7 +62,7 @@ Vector4f Manipulator::dKinAlg(const VectorXf& vars, int upToNJoint, const int i)
 		return v;
 	}
 	H = HTMat(vars[i],i);
-	//std::cout << "HTMat @ " << i << "-th iteration: \n" << H << std::endl;
+
     /*RECURSION*/
     if(i == upToNJoint - 1) {
     	return H*v;

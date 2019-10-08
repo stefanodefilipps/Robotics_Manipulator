@@ -47,13 +47,13 @@ VectorXf get_state() const {
 	return q;
 }
 
-MatrixXf jacobian(VectorXf& q0 = q, float eps = 0.00001, int upToJ = -1) const; /*DONE & WORKS*/
+MatrixXf jacobian(const VectorXf& qi = q,  int upToJ = -1, float eps = 0.00001) const; /*DONE & WORKS*/
 
 VectorXf update_configuration(const VectorXf& q_dot, const float T);
 
 private:
 // DIRECT KINEMATICS
-Vector4f dKinAlg(const VectorXf& vars, int upToNJoin,const int i) const; /*DONE & WORKS*/
+Vector4f dKinAlg(const VectorXf& vars, int upToNJoint,const int i) const; /*DONE & WORKS*/
 Matrix4f HTMat(const float var, const int i) const;
 Matrix3f RMat(const float var, const int i) const;
 
