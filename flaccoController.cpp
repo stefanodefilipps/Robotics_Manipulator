@@ -22,6 +22,17 @@ VectorXf FlaccoController::control(vector<MatrixXf> Ji, vector<VectorXf> bi, vec
 	bi[0] = bi[0] + eeRepulsiveVelocity(CPs[0]);
 	return FlaccoPrioritySolution(Ji, bi, lam, eps);
 }
+/*
+ * To project the jacobian and the task velocity along the distance from the obstacle
+ */
+MatrixXf FlaccoController::projectJ(const MatrixXf& J, const Vector3f& pos, const int nObst) {
+    Vector3f n{-eeDisVec(pos,nObst)/eeDis(pos,nObst)};
+    return n.transpose()*J;
+}
+float FlaccoController::projectP(const Vector3f& pos, const int nObst) {
+    Vector3f n{-eeDisVec(pos,nObst)/eeDis(pos,nObst)};
+    return static_cast<float >(n.transpose()*pos);
+}
 
 /* This is the function to compute the damped pseudoinverse
    - lam is the largest damping factor used near singularities
@@ -30,6 +41,10 @@ VectorXf FlaccoController::control(vector<MatrixXf> Ji, vector<VectorXf> bi, vec
 /* STATIC */
 bool FlaccoController::isObstacle{0};
 std::vector<Vector3f> FlaccoController::obstPos;
+void FlaccoController::newObst(const Vector3f newPos) {
+    if(obstPos.size() == 1) obstPos[0] = newPos;
+    else obstPos.push_back(newPos);
+}
 
 MatrixXf FlaccoController::damped_pinv(MatrixXf J,float lam, float eps){
 	JacobiSVD<MatrixXf> svd(J, ComputeFullU | ComputeFullV);
