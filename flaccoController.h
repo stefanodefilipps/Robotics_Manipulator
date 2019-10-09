@@ -46,7 +46,8 @@ static void newObst(const Vector3f newPos);
 	*/
 
 	VectorXf control(vector<MatrixXf> Ji, vector<VectorXf> bi, vector<VectorXf> obstacles, vector<VectorXf> CPs, vector<VectorXf> p_ds, float lam = 0.1, float eps = 0.1);
-
+    void projectJ(const MatrixXf& J, int controlPointJoint); /*TODO: returned type*/
+    void projectP(/*TODO: What does it know?*/); /*TODO: returned type*/
 private:
 
 static bool isObstacle; // --> to verify wether there is an obstacle or not
