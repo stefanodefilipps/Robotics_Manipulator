@@ -10,14 +10,12 @@ Write me @ menchetti.1713013@studenti.uniroma1.it
 
 VectorXf Manipulator::q;
 
-MatrixXf Manipulator::jacobian(const VectorXf& qi,int upToJ, float eps) const {
-    VectorXf q0{qi};
-    if(upToJ == -1) upToJ = nJoints;
-    else q0.resize(upToJ);
+MatrixXf Manipulator::jacobian(const VectorXf& q0,int upToJ, float eps) const {
+    upToJ = upToJ == -1 ? nJoints : upToJ;
 	/*JACOBIAN DIMENTION ASSIGNEMENT*/
 	MatrixXf J(3,upToJ);
 	/*COLUMN WISE ASSIGNEMENT OF JACOBIAN'S ELEMENTS*/
-	for (unsigned int i{0}; i < static_cast<int> (q0.size()); ++i) {
+	for (unsigned int i{0}; i < static_cast<int> (q0.head(upToJ).size()); ++i) {
         VectorXf qEps{q0};
 		qEps[i] = q0[i] + eps;
 		J.col(i) = (dKin(qEps,upToJ) - dKin(q0,upToJ))/eps;
