@@ -9,6 +9,7 @@
 #include <Eigen/QR>
 #include <math.h>
 #include <vector>
+#include "Task.h"
 
 using namespace Eigen;
 using namespace std;
@@ -46,7 +47,7 @@ static void newObst(const Vector3f newPos);
 	*/
 
 	VectorXf control(vector<MatrixXf> Ji, vector<VectorXf> bi, vector<VectorXf> obstacles, vector<VectorXf> CPs, vector<VectorXf> p_ds, float lam = 0.1, float eps = 0.1);
-    void taskReorder(/*TODO: What does it know?*/);
+    void taskReorder(Task::Task& stack, float d,float critic_d) const; /*TODO: std values*/
 private:
     static bool isObstacle; // --> to verify wether there is an obstacle or not
 
