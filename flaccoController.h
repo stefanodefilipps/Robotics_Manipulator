@@ -46,9 +46,8 @@ static void newObst(const Vector3f newPos);
 	*/
 
 	VectorXf control(vector<MatrixXf> Ji, vector<VectorXf> bi, vector<VectorXf> obstacles, vector<VectorXf> CPs, vector<VectorXf> p_ds, float lam = 0.1, float eps = 0.1);
-    void taskReorder(/*TODO: What does it know?*/); /*TODO: returned type*/
+    void taskReorder(/*TODO: What does it know?*/);
 private:
-    void swapTask(const std::vector<MatrixXf>& stack, int i, int j); /*TODO: returned type*/
     static bool isObstacle; // --> to verify wether there is an obstacle or not
 
 
