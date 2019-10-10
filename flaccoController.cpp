@@ -33,8 +33,8 @@ MatrixXf FlaccoController::projectJ(const MatrixXf& J, const Vector3f& pos, cons
     Vector3f n{-eeDisVec(pos,nObst)/eeDis(pos,nObst)};
     return n.transpose()*J;
 }
-float FlaccoController::projectP(const Vector3f& vel, const Vector3f& pos, const int nObst) {
-    return projectJ(vel,pos,nObst)(0);
+float FlaccoController::projectP(const Vector3f& pos, const int nObst) {
+    return projectJ(eeRepulsiveVelocity(pos,nObst),pos,nObst)(0);
     /*
      * Return the first (and only, due to the checks) element
      * of the Matrix returned by projectJ
