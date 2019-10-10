@@ -1,7 +1,8 @@
 VV 1. progressive Jacobian
 
-2. control points projected velocity (scalars)
-  a. task velocity
-  b. associated jacobian
+V 2. control points projected velocity (scalars)
+  V a. task velocity
+  VV b. associated jacobian
+   c. generate velocity
 
 3. task reordering
