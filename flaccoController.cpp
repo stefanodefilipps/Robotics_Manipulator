@@ -26,12 +26,19 @@ VectorXf FlaccoController::control(vector<MatrixXf> Ji, vector<VectorXf> bi, vec
  * To project the jacobian and the task velocity along the distance from the obstacle
  */
 MatrixXf FlaccoController::projectJ(const MatrixXf& J, const Vector3f& pos, const int nObst) {
+    if(J.rows() != 3) {
+        std::cout << "Error in J dimentions: number of rows should be 3.\n Returning J" << std::endl;
+        return J;
+    }
     Vector3f n{-eeDisVec(pos,nObst)/eeDis(pos,nObst)};
     return n.transpose()*J;
 }
-float FlaccoController::projectP(const Vector3f& pos, const int nObst) {
-    Vector3f n{-eeDisVec(pos,nObst)/eeDis(pos,nObst)};
-    return static_cast<float >(n.transpose()*pos);
+float FlaccoController::projectP(const Vector3f& vel, const Vector3f& pos, const int nObst) {
+    return projectJ(vel,pos,nObst)(0);
+    /*
+     * Return the first (and only, due to the checks) element
+     * of the Matrix returned by projectJ
+     */
 }
 
 /* This is the function to compute the damped pseudoinverse
