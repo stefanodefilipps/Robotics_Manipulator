@@ -157,7 +157,9 @@ Vector3f FlaccoController::eeRepulsiveVelocity(const VectorXf &Pos, const int nu
 	return repulsiveMagnitude(Pos,numberOfObstacle) * eeDisVec(Pos,numberOfObstacle) / eeDis(Pos,numberOfObstacle);
 }
 
-void FlaccoController::taskReorder(Task::Task& stack, float d,float critic_d) const {
-	/*TODO: implementation, ALOTOFSWITCH :O, or logic carnot's map?*/
+void FlaccoController::taskReorder(Task::Task& stack,const std::vector<Vector3f>& contPoints, float d,float critic_d) const {
+	/*TODO: take into account the actual order*/
+	/*TODO: first reordering wrt "d"*/
+	/*TODO: second reordering wrt "D"*/
 }
 
