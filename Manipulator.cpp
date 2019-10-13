@@ -78,3 +78,20 @@ VectorXf Manipulator::update_configuration(const VectorXf& q_dot, const float T)
 	q = q + q_dot * T;
 	return q;
 }
+
+std::vector<Vector3f> Manipulator::controlPoints() const {
+	/*TODO: test it*/
+	int nPoints = static_cast<int>(ctrPtsJoint.size());
+	std::vector<Vector3f> tmp(nPoints);
+	for (int i = 0; i < nPoints; ++i) {
+		tmp[i] = dKin(q,ctrPtsJoint[i]);
+	}
+	return tmp;
+}
+void Manipulator::setCtrPtsJoints(const std::vector<int> pts) {
+	/*UP TO NOW IT WON'T CHECK DIMENSIONS ON ctrPtsJoints*/
+	int nPoints = static_cast<int>(pts.size());
+	for (int i = 0; i < nPoints; ++i) {
+		ctrPtsJoint.push_back(pts[i]);
+	}
+}

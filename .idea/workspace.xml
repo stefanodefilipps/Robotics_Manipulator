@@ -7,11 +7,20 @@
     <configurations />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="13b6b761-e26d-470c-ad75-ba0d29ac9ac7" name="Default Changelist" comment="" />
+    <list default="true" id="13b6b761-e26d-470c-ad75-ba0d29ac9ac7" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Manipulator.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Manipulator.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Manipulator.h" beforeDir="false" afterPath="$PROJECT_DIR$/Manipulator.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/example_progrressiveJacobian.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/example_reordering.cpp" beforeDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FavoritesManager">
+    <favorites_list name="ROB2_project" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -19,6 +28,7 @@
   <component name="ProjectId" id="1Rx84IRe2jfF6vbKp8AI6ISkKHA" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
   </component>
