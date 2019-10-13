@@ -168,37 +168,33 @@ void FlaccoController::taskReorder(Task& stack,const std::vector<Vector3f>& cont
 	std::cout << "Distances:\n";
 	for (int i = 0; i < cycle; ++i) {
 		int stackInd = stack.getInd()[i];
-		if(stackInd == 1) dist[stackInd] = critic_d+1;  /* index 1 means a peculiar task
- 														 * for which we add a fictitious distance
- 														 */
+		if(stackInd == 1) dist[stackInd] = d+1;  /* index 1 means a peculiar task
+												  * for which we add a fictitious distance
+												  */
 		else {
-			float temp_d = eeDis(contPoints[i == 0 ? i : i - 1]); // ctrP has 1 element less than stack
+			float temp_d = eeDis(contPoints[stackInd == 0 ? stackInd : stackInd - 1]); // ctrP has 1 element less than stack
 			dist[stackInd] = temp_d;
 		}
 		std::cout << dist[i] << std::endl;
 	}
-	/*COMPARING*/
-	vector<int> cmp{0,0,0,0};
-	std::cout << "Comparison:\n";
-	for (int j = 0; j < cycle; ++j) {
-		cmp[j] += (dist[j] < d) + (dist[j] < critic_d);
-		if(cmp[j] > 0) {
-			for (int i = 0; i < cycle; ++i) {
-				cmp[j] += (dist[j] < dist[i]);
-			}
-		}
-		std::cout << cmp[j] << std::endl;
-	}
 	/*SWAPPING*/
-	for (int k = 0; k < cycle; ++k) {
-		int tmp_ind{-1};
-		for (int i = k; i < cycle; ++i) {
-			if(cmp[i] > cmp[k]) tmp_ind = i;
-		}
-		if(tmp_ind != k && tmp_ind > 0) {
-			stack.swapTask(tmp_ind,k);
-			std::cout << "swap " << tmp_ind << " with " << k << std::endl;
-			cmp[tmp_ind] = cmp[k];
+	int criticity{0};
+	for (int i = 0; i < cycle - 1; ++i) {
+		float di = dist[i];
+		float dj = dist[i+1];
+		std::cout << "-----------\ni=" << i << "\ndi =\n" << di << "\ndj =\n" << dj << std::endl;
+		if(dj <= d && dj < di) {
+			if(dj <= critic_d) {/*swap also the first only in critic circumstances*/
+				stack.swapTask(i+1,i);
+				++criticity;
+				std::cout << "\n______\nswap critic\n______\n";
+			} else if(i > criticity) {
+				stack.swapTask(i+1,i);
+				dist[i] = dj;
+				dist[i+1] = di;
+				std::cout << "\n______\nswap non critic\n______\n";
+			}
+			i==0 ? i-=1 : i -= 2; /*Goes back to check*/
 		}
 	}
 }

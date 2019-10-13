@@ -9,12 +9,11 @@
   <component name="ChangeListManager">
     <list default="true" id="13b6b761-e26d-470c-ad75-ba0d29ac9ac7" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Task.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Task.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Task.h" beforeDir="false" afterPath="$PROJECT_DIR$/Task.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Task.o" beforeDir="false" afterPath="$PROJECT_DIR$/Task.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example_reordering" beforeDir="false" afterPath="$PROJECT_DIR$/example_reordering" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/example_reordering.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/example_reordering.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/example_reordering.o" beforeDir="false" afterPath="$PROJECT_DIR$/example_reordering.o" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/flaccoController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/flaccoController.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/flaccoController.h" beforeDir="false" afterPath="$PROJECT_DIR$/flaccoController.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/flaccoController.o" beforeDir="false" afterPath="$PROJECT_DIR$/flaccoController.o" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
