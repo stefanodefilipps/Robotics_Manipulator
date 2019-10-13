@@ -189,7 +189,7 @@ void FlaccoController::taskReorder(Task& stack,const std::vector<Vector3f>& cont
 																	 	// won't be computed again
 
 				if(i>criticity) ++criticity;	// dimension of the critic distance vector increase if a critic
-												// swap is being done from outside th sub-
+												// swap is being done from outside the sub-vector
 
 				i == 0 ? i-=1 : i -= 2; //can't accede to dist[-1] in the next step if i == 0
 			}
