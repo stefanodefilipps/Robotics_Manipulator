@@ -30,6 +30,10 @@ VectorXf FlaccoController::control(vector<MatrixXf> Ji, vector<VectorXf> bi, vec
 /* STATIC */
 bool FlaccoController::isObstacle{0};
 std::vector<Vector3f> FlaccoController::obstPos;
+void FlaccoController::newObst(const Vector3f newPos) {
+	if(obstPos.size() == 1) obstPos[0] = newPos;
+	else obstPos.push_back(newPos);
+}
 
 MatrixXf FlaccoController::damped_pinv(MatrixXf J,float lam, float eps){
 	JacobiSVD<MatrixXf> svd(J, ComputeFullU | ComputeFullV);
@@ -160,29 +164,42 @@ Vector3f FlaccoController::eeRepulsiveVelocity(const VectorXf &Pos, const int nu
 void FlaccoController::taskReorder(Task& stack,const std::vector<Vector3f>& contPoints, float d,float critic_d) const {
 	int cycle = stack.size();
 	/*DISTANCE VECTOR*/
-	std::vector<float> dist;
+	std::vector<float> dist(cycle,0);
+	std::cout << "Distances:\n";
 	for (int i = 0; i < cycle; ++i) {
-		if(stack.getInd()[i] == 1) dist.push_back(critic_d+1);
+		int stackInd = stack.getInd()[i];
+		if(stackInd == 1) dist[stackInd] = critic_d+1;  /* index 1 means a peculiar task
+ 														 * for which we add a fictitious distance
+ 														 */
 		else {
-			float temp_d = eeDis(contPoints[i == 0 ? i : i - 1]);
-			dist.push_back(temp_d);
+			float temp_d = eeDis(contPoints[i == 0 ? i : i - 1]); // ctrP has 1 element less than stack
+			dist[stackInd] = temp_d;
 		}
+		std::cout << dist[i] << std::endl;
 	}
 	/*COMPARING*/
 	vector<int> cmp{0,0,0,0};
+	std::cout << "Comparison:\n";
 	for (int j = 0; j < cycle; ++j) {
 		cmp[j] += (dist[j] < d) + (dist[j] < critic_d);
-		for (int i = 0; i < cycle; ++i) {
-			cmp[j] += (dist[i] < dist[i]);
+		if(cmp[j] > 0) {
+			for (int i = 0; i < cycle; ++i) {
+				cmp[j] += (dist[j] < dist[i]);
+			}
 		}
+		std::cout << cmp[j] << std::endl;
 	}
 	/*SWAPPING*/
 	for (int k = 0; k < cycle; ++k) {
-		int tmp_ind{0};
+		int tmp_ind{-1};
 		for (int i = k; i < cycle; ++i) {
 			if(cmp[i] > cmp[k]) tmp_ind = i;
 		}
-		if(tmp_ind != k) stack.swapTask(tmp_ind,k);
+		if(tmp_ind != k && tmp_ind > 0) {
+			stack.swapTask(tmp_ind,k);
+			std::cout << "swap " << tmp_ind << " with " << k << std::endl;
+			cmp[tmp_ind] = cmp[k];
+		}
 	}
 }
 

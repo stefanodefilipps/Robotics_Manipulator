@@ -28,13 +28,18 @@ int main() {
 	contr.newObst(oPos);							/*Obstacle position*/
 	vector<Vector3f> ctrP;							/*Control point positions: TODO in Manipulator*/
 	for (int i = 0; i < 3; ++i) {
-		ctrP.push_back(man.dKin(q_in,i));
+		ctrP.push_back(man.dKin(q_in,3-i));
 	}
 	cout << "Indices before task Reordering:\n" << stack.getInd() << endl;
-	cout << "Stack before task Reordering:\n" << stack.getStack() << endl;
-	contr.taskReorder(stack,ctrP,1.4,1);
+	//cout << "Stack before task Reordering:\n" << stack.getStack() << endl;
+	contr.taskReorder(stack,ctrP,1.42,1);
 	cout << "Indices after task Reordering:\n" << stack.getInd() << endl;
-	cout << "Stack after task Reordering:\n" << stack.getStack() << endl;
+	//cout << "Stack after task Reordering:\n" << stack.getStack() << endl;
+	cout << "\n---------------------\n";
+	cout << "Max distances are:\td = 1.42\tD = 1\nWhile distances were:\n";
+	for (int j = 0; j < 3; ++j) {
+		cout << contr.eeDis(ctrP[j]) << endl;
+	}
 	return 0;
 }
 

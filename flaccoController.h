@@ -48,6 +48,11 @@ static void newObst(const Vector3f newPos);
 
 	VectorXf control(vector<MatrixXf> Ji, vector<VectorXf> bi, vector<VectorXf> obstacles, vector<VectorXf> CPs, vector<VectorXf> p_ds, float lam = 0.1, float eps = 0.1);
     void taskReorder(Task& stack,const std::vector<Vector3f>& contPoints, float d,float critic_d) const; /*TODO: std values*/
+	Vector3f eeDisVec(const VectorXf &Pos, const int numberOfObstacle = 0) const;
+
+	// I moved the function to compute the repulsive velocities in the controller instead that in the manipulator since they are only use in the controller scheme
+
+	float eeDis(const VectorXf &Pos, const int numberOfObstacle = 0) const;
 private:
     static bool isObstacle; // --> to verify wether there is an obstacle or not
 
@@ -57,12 +62,6 @@ private:
 	MatrixXf tasksPriorityMatrix(MatrixXf bF,VectorXi tasksDim,float lam,float eps);
 
 	VectorXf FlaccoPrioritySolution(vector<MatrixXf> Ji, vector<VectorXf> bi, float lam = 0.1, float eps = 0.1);
-
-	Vector3f eeDisVec(const VectorXf &Pos, const int numberOfObstacle = 0) const;
-
-	// I moved the function to compute the repulsive velocities in the controller instead that in the manipulator since they are only use in the controller scheme
-
-	float eeDis(const VectorXf &Pos, const int numberOfObstacle = 0) const;
 
 	float repulsiveMagnitude(const VectorXf &Pos, const int numberOfObstacle = 0) const;
 

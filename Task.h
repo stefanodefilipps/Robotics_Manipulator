@@ -20,6 +20,7 @@ public:
 	// SET FUNCTIONS
     void set(const std::vector<Eigen::MatrixXf>& stack_);
     // METHODS
+    void goUpTo(int start, int end);
     void swapTask(int i, int j);
     // OPERATORS
     Eigen::MatrixXf operator()(int k) const; // ACCESS i-th VALUE OF NON PRIORITIZED TASK

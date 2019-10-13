@@ -9,11 +9,13 @@
   <component name="ChangeListManager">
     <list default="true" id="13b6b761-e26d-470c-ad75-ba0d29ac9ac7" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Task.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Task.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Task.h" beforeDir="false" afterPath="$PROJECT_DIR$/Task.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/example_reordering.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/example_reordering.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example_reordering.o" beforeDir="false" afterPath="$PROJECT_DIR$/example_reordering.o" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/flaccoController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/flaccoController.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/flaccoController.h" beforeDir="false" afterPath="$PROJECT_DIR$/flaccoController.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/flaccoController.o" beforeDir="false" afterPath="$PROJECT_DIR$/flaccoController.o" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -25,11 +27,17 @@
     <option name="formatViaClangd" value="false" />
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="taskReordering" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectId" id="1Rx84IRe2jfF6vbKp8AI6ISkKHA" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="node.js.detected.package.eslint" value="true" />
