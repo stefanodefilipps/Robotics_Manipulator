@@ -165,7 +165,6 @@ void FlaccoController::taskReorder(Task& stack,const std::vector<Vector3f>& cont
 	int cycle = stack.size();
 	/*DISTANCE VECTOR*/
 	std::vector<float> dist(cycle,0);
-	std::cout << "Distances:\n";
 	for (int i = 0; i < cycle; ++i) {
 		int stackInd = stack.getInd()[i];
 		if(stackInd == 1) dist[stackInd] = d+1;  /* index 1 means a peculiar task
@@ -175,26 +174,25 @@ void FlaccoController::taskReorder(Task& stack,const std::vector<Vector3f>& cont
 			float temp_d = eeDis(contPoints[stackInd == 0 ? stackInd : stackInd - 1]); // ctrP has 1 element less than stack
 			dist[stackInd] = temp_d;
 		}
-		std::cout << dist[i] << std::endl;
 	}
 	/*SWAPPING*/
 	int criticity{0};
 	for (int i = 0; i < cycle - 1; ++i) {
 		float di = dist[i];
 		float dj = dist[i+1];
-		std::cout << "-----------\ni=" << i << "\ndi =\n" << di << "\ndj =\n" << dj << std::endl;
-		if(dj <= d && dj < di) {
-			if(dj <= critic_d) {/*swap also the first only in critic circumstances*/
-				stack.swapTask(i+1,i);
-				++criticity;
-				std::cout << "\n______\nswap critic\n______\n";
-			} else if(i > criticity) {
-				stack.swapTask(i+1,i);
-				dist[i] = dj;
-				dist[i+1] = di;
-				std::cout << "\n______\nswap non critic\n______\n";
+		if(dj < di) {
+			if(dj <= d && dj > critic_d && i > criticity){
+				stack.swapTask(i,i+1); dist[i] = dj; dist[i+1] = di;
+				i -= 2;
+			} else if(dj <= critic_d) {
+				stack.swapTask(i,i+1); dist[i] = dj; dist[i+1] = di; 	//swap task and distances so that in next step
+																	 	// won't be computed again
+
+				if(i>criticity) ++criticity;	// dimension of the critic distance vector increase if a critic
+												// swap is being done from outside th sub-
+
+				i == 0 ? i-=1 : i -= 2; //can't accede to dist[-1] in the next step if i == 0
 			}
-			i==0 ? i-=1 : i -= 2; /*Goes back to check*/
 		}
 	}
 }

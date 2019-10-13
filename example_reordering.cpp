@@ -24,7 +24,7 @@ int main() {
 	Eigen::MatrixXf J4(5,5);
 	vector<Eigen::MatrixXf> stack_{J1,J2,J3,J4};
 	Task stack{stack_};								/*stack of task*/
-	Vector3f oPos{1,1,0};
+	Vector3f oPos{2,1,0};
 	contr.newObst(oPos);							/*Obstacle position*/
 	vector<Vector3f> ctrP;							/*Control point positions: TODO in Manipulator*/
 	for (int i = 0; i < 3; ++i) {
