@@ -1,8 +1,8 @@
-example_swap: example_swap.o Task.o
-	g++ -o example_swap example_swap.o Task.o
-Task.o: Task.cpp
-	g++ -c Task.cpp
-example_swap.o: example_swap.cpp
-	g++ -c example_swap.cpp
+example_ctrPoints: example_ctrPoints.o Manipulator.o
+	g++ -o example_ctrPoints example_ctrPoints.o Manipulator.o
+Manipulator.o: Manipulator.cpp
+	g++ -c Manipulator.cpp
+example_ctrPoints.o: example_ctrPoints.cpp
+	g++ -c example_ctrPoints.cpp
 clean:
-	rm *.o example_swap
+	rm *.o example_ctrPoints
