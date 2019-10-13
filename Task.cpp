@@ -16,6 +16,10 @@ std::vector<int> Task::getInd() const {
 	return indices;
 }
 
+int Task::size() const {
+	return static_cast<int>(indices.size());
+}
+
 void Task::set(const std::vector<Eigen::MatrixXf>& stack_) {
 	stack = stack_;
 }

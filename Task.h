@@ -16,6 +16,7 @@ public:
     std::vector<Eigen::MatrixXf> get() const; /*GET THE STACK, NON PRIORITIZED*/
     std::vector<Eigen::MatrixXf> getStack() const; /*GET THE STACK, PRIORITIZED*/
 	std::vector<int> getInd() const; /*GET PRIORITY INDICES*/
+	int size() const;
 	// SET FUNCTIONS
     void set(const std::vector<Eigen::MatrixXf>& stack_);
     // METHODS

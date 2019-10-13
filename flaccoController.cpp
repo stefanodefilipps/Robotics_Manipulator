@@ -157,9 +157,32 @@ Vector3f FlaccoController::eeRepulsiveVelocity(const VectorXf &Pos, const int nu
 	return repulsiveMagnitude(Pos,numberOfObstacle) * eeDisVec(Pos,numberOfObstacle) / eeDis(Pos,numberOfObstacle);
 }
 
-void FlaccoController::taskReorder(Task::Task& stack,const std::vector<Vector3f>& contPoints, float d,float critic_d) const {
-	/*TODO: take into account the actual order*/
-	/*TODO: first reordering wrt "d"*/
-	/*TODO: second reordering wrt "D"*/
+void FlaccoController::taskReorder(Task& stack,const std::vector<Vector3f>& contPoints, float d,float critic_d) const {
+	int cycle = stack.size();
+	/*DISTANCE VECTOR*/
+	std::vector<float> dist;
+	for (int i = 0; i < cycle; ++i) {
+		if(stack.getInd()[i] == 1) dist.push_back(critic_d+1);
+		else {
+			float temp_d = eeDis(contPoints[i == 0 ? i : i - 1]);
+			dist.push_back(temp_d);
+		}
+	}
+	/*COMPARING*/
+	vector<int> cmp{0,0,0,0};
+	for (int j = 0; j < cycle; ++j) {
+		cmp[j] += (dist[j] < d) + (dist[j] < critic_d);
+		for (int i = 0; i < cycle; ++i) {
+			cmp[j] += (dist[i] < dist[i]);
+		}
+	}
+	/*SWAPPING*/
+	for (int k = 0; k < cycle; ++k) {
+		int tmp_ind{0};
+		for (int i = k; i < cycle; ++i) {
+			if(cmp[i] > cmp[k]) tmp_ind = i;
+		}
+		if(tmp_ind != k) stack.swapTask(tmp_ind,k);
+	}
 }
 
