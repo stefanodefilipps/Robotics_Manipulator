@@ -80,7 +80,7 @@ VectorXf Manipulator::update_configuration(const VectorXf& q_dot, const float T)
 }
 
 std::vector<Vector3f> Manipulator::controlPoints() const {
-	/*TODO: test it*/
+	/*TODO: check for strange joints value*/
 	int nPoints = static_cast<int>(ctrPtsJoint.size());
 	std::vector<Vector3f> tmp(nPoints);
 	for (int i = 0; i < nPoints; ++i) {
