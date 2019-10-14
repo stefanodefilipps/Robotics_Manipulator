@@ -51,6 +51,8 @@ MatrixXf jacobian(const VectorXf& q0 = q,  int upToJ = -1, float eps = 0.00001) 
 
 VectorXf update_configuration(const VectorXf& q_dot, const float T);
 
+std::vector<Vector3f> controlPoints() const;
+void setCtrPtsJoints(const std::vector<int> pts);
 private:
 // DIRECT KINEMATICS
 Vector4f dKinAlg(const VectorXf& vars, int upToNJoint,const int i) const; /*DONE & WORKS*/
@@ -74,7 +76,8 @@ const int nJoints{0};
  */
 MatrixXf DH;
 static VectorXf q;
-float world_z_offset; 
+float world_z_offset;
+std::vector<int> ctrPtsJoint;
 
 // TODO: DYNAMICS ONES
 };

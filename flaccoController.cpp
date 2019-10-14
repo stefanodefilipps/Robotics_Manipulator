@@ -49,8 +49,8 @@ float FlaccoController::projectP(const Vector3f& pos, const int nObst) {
 bool FlaccoController::isObstacle{0};
 std::vector<Vector3f> FlaccoController::obstPos;
 void FlaccoController::newObst(const Vector3f newPos) {
-    if(obstPos.size() == 1) obstPos[0] = newPos;
-    else obstPos.push_back(newPos);
+	if(obstPos.size() == 1) obstPos[0] = newPos;
+	else obstPos.push_back(newPos);
 }
 
 MatrixXf FlaccoController::damped_pinv(MatrixXf J,float lam, float eps){
@@ -178,3 +178,40 @@ float FlaccoController::repulsiveMagnitude(const VectorXf &Pos, const int number
 Vector3f FlaccoController::eeRepulsiveVelocity(const VectorXf &Pos, const int numberOfObstacle) const{
 	return repulsiveMagnitude(Pos,numberOfObstacle) * eeDisVec(Pos,numberOfObstacle) / eeDis(Pos,numberOfObstacle);
 }
+
+void FlaccoController::taskReorder(Task& stack,const std::vector<Vector3f>& contPoints, float d,float critic_d) const {
+	int cycle = stack.size();
+	/*DISTANCE VECTOR*/
+	std::vector<float> dist(cycle,0);
+	for (int i = 0; i < cycle; ++i) {
+		int stackInd = stack.getInd()[i];
+		if(stackInd == 1) dist[stackInd] = d+1;  /* index 1 means a peculiar task
+												  * for which we add a fictitious distance
+												  */
+		else {
+			float temp_d = eeDis(contPoints[stackInd == 0 ? stackInd : stackInd - 1]); // ctrP has 1 element less than stack
+			dist[stackInd] = temp_d;
+		}
+	}
+	/*SWAPPING*/
+	int criticity{0};
+	for (int i = 0; i < cycle - 1; ++i) {
+		float di = dist[i];
+		float dj = dist[i+1];
+		if(dj < di) {
+			if(dj <= d && dj > critic_d && i > criticity){
+				stack.swapTask(i,i+1); dist[i] = dj; dist[i+1] = di;
+				i -= 2;
+			} else if(dj <= critic_d) {
+				stack.swapTask(i,i+1); dist[i] = dj; dist[i+1] = di; 	//swap task and distances so that in next step
+																	 	// won't be computed again
+
+				if(i>criticity) ++criticity;	// dimension of the critic distance vector increase if a critic
+												// swap is being done from outside the sub-vector
+
+				i == 0 ? i-=1 : i -= 2; //can't accede to dist[-1] in the next step if i == 0
+			}
+		}
+	}
+}
+

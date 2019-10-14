@@ -9,6 +9,7 @@
 #include <Eigen/QR>
 #include <math.h>
 #include <vector>
+#include "Task.h"
 
 using namespace Eigen;
 using namespace std;
@@ -49,12 +50,14 @@ static void newObst(const Vector3f newPos);
 	MatrixXf projectJ(const MatrixXf& J, const Vector3f& pos, const int nObst = 0);
     float projectP(const Vector3f& pos, const int nObst = 0);
     Vector3f eeDisVec(const VectorXf &Pos, const int numberOfObstacle = 0) const;
-    // I moved the function to compute the repulsive velocities in the controller instead that in the manipulator since they are only use in the controller scheme
     float eeDis(const VectorXf &Pos, const int numberOfObstacle = 0) const;
     Vector3f eeRepulsiveVelocity(const VectorXf &Pos, const int numberOfObstacle = 0) const;
-private:
+    void taskReorder(Task& stack,const std::vector<Vector3f>& contPoints, float d,float critic_d) const; /*TODO: std values*/
 
-static bool isObstacle; // --> to verify wether there is an obstacle or not
+
+	float eeDis(const VectorXf &Pos, const int numberOfObstacle = 0) const;
+private:
+    static bool isObstacle; // --> to verify wether there is an obstacle or not
 
 
 	MatrixXf damped_pinv(MatrixXf J,float lam, float eps);
