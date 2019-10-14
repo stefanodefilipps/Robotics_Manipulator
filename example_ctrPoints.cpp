@@ -18,7 +18,7 @@ int main() {
 
 	Manipulator man{DH,q_in};
 
-	vector<int> cPoints{4,2,1};
+	vector<int> cPoints{4,3,1};
 	man.setCtrPtsJoints(cPoints);
 
 	cout << "The control points positions are:";
