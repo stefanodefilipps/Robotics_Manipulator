@@ -10,6 +10,7 @@
 qmake -makefile v_repExtKUKA.pro
 ```
 
-4. Then launch `make` to build the plug in and it generates 4 new files. 3 of them are links and the important file is the one whose name ends with **.so.1.0.1.** This file needs to be copied in the main installation directory of V-REP and its name needs to be changed in order to delete the **.1.0.1**[^1]
+4. Then launch `make` to build the plug in and it generates 4 new files. 3 of them are links and the important file is the one whose name ends with "**.so.1.0.1.**" This file needs to be copied in the main installation directory of V-REP and its name needs to be changed in order to delete the "**.1.0.1**".
 
-[^1]: the naming of the plug in is important. It needs to be v_repExt* and in * no other "_" have to be present. Otherwise the V-REP main program don't load the plug in 
+> :warning: the naming of the plug in is important. It needs to be "v_repExt\*" and in "\*" no other "\_" have to be present. Otherwise the V-REP main program don't load the plug in 
+
