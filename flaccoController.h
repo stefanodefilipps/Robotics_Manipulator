@@ -27,12 +27,11 @@ static void newObst(const Vector3f newPos);
 	// rho_: the half length of the control point bounding box
 	// v_max_: The maximum velocity in module that the repulsive vector can get
 	// ks is a vector containing the diagonal element of the proportional parameters of the cartesian control scheme
-	FlaccoController(float alpha_, float rho_, float v_max_, VectorXf ks, vector<Vector3f> obstPos_){
+	FlaccoController(float alpha_, float rho_, float v_max_, VectorXf ks){
 		alpha = alpha_;
 		rho = rho_;
 		v_max = v_max_;
 		K = ks.asDiagonal();
-		obstPos = obstPos_;
 	}
 
 	/*

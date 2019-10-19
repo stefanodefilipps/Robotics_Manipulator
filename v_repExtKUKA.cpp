@@ -104,7 +104,6 @@ vector<MatrixXf> Ji;
 vector<VectorXf> bi;
 VectorXf q_dot(7);
 Vector3f obstPos;
-Vector3f p_desired_ee;
 
 Manipulator* man;
 PathTrajectory* path;
@@ -296,15 +295,16 @@ VREP_DLLEXPORT void* v_repMessage(int message,int* auxiliaryData,void* customDat
 		if(t <= path->get_end_condition()){
 			// To the controller we need to pass the stack of Jacobian and tasks velocities, The world positions of the control points,
 			// the world obstacles position and the feedforward term for the ee position for the cartesian control scheme
-			// For now the only control point is simply the end effector 
-            vector<VectorXf> CPs{man->dKin(q)};
             J = man->jacobian(q);
-            b = path->p_dot_d(t) + controller->eeRepulsiveVelocity(CPs[0],0);
-            p_desired_ee = p_desired_ee + T * b;
-            b = b + K * (p_desired_ee - man->dKin(q));
+            b = path->p_dot_d(t);
             Ji = {J,J2};
             bi = {b,b2};
-            q_dot = controller->control(Ji, bi, CPs, 0.1, 0.1);
+            // For now the only control point is simply the end effector 
+            vector<VectorXf> CPs{man->dKin(q)};
+            // for now we have simply one static object
+            vector<VectorXf> obstacles{obstPos};
+            vector<VectorXf> p_ds{path->p_d(t)};
+            q_dot = controller->control(Ji, bi, obstacles, CPs, p_ds, 0.1, 0.1);
             q = man->update_configuration(q_dot,T);
             simSetJointPosition(joint_1,q(0));
             simSetJointPosition(joint_2,q(1));
@@ -367,9 +367,7 @@ VREP_DLLEXPORT void* v_repMessage(int message,int* auxiliaryData,void* customDat
         man = new Manipulator(DH,q,z_offset);
         VectorXf ks(3);
         ks << 20.0,20.0,20.0;
-        K = ks.asDiagonal();
-        vector<Vector3f> obstacles{obstPos};
-        controller = new FlaccoController(alpha,rho,v_max,ks,obstacles);
+        controller = new FlaccoController(alpha,rho,v_max,ks);
         if(path_.compare("linear") == 0){
 
 	        p_in << man->dKin(q)[0],
@@ -377,8 +375,6 @@ VREP_DLLEXPORT void* v_repMessage(int message,int* auxiliaryData,void* customDat
 	                man->dKin(q)[2];
 
 	        cout << p_in;
-
-	        p_desired_ee = p_in;
 
 	        float x;
 	        float y;
@@ -418,7 +414,6 @@ VREP_DLLEXPORT void* v_repMessage(int message,int* auxiliaryData,void* customDat
         	C(1) = v;
         	vector<VectorXf> in = {C};
         	path = new PathTrajectory("circular",in, R, multiplier, phi);
-        	p_desired_ee =  path->p_d(0);
         	J2 << 1.0,1.0,1.0,1.0,0.0,0.0,0.0;
 
 	        b2 << 0;
