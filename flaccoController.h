@@ -9,6 +9,7 @@
 #include <Eigen/QR>
 #include <math.h>
 #include <vector>
+#include "Task.h"
 
 using namespace Eigen;
 using namespace std;
@@ -21,7 +22,7 @@ static std::vector<Vector3f> obstPos;
 
 // TO ADD AN OBSTACLE TO THE STACK
 static void newObst(const Vector3f newPos);
-
+    /*TODO: add a renge to those parameters or at least a std implementation*/
 	// to the controller constructor we need to pass the terms for computing the repulsive vector magnitude:
 	// aplha_ : to shape the sigmoid curve of the magnitude
 	// rho_: the half length of the control point bounding box
@@ -46,12 +47,20 @@ static void newObst(const Vector3f newPos);
 		- p_ds is a vector containing the feedforward trajectory values for implementing a simple cartesian control scheme and thei ordering is the same as Ji
 	*/
 
+
+	MatrixXf projectJ(const MatrixXf& J, const Vector3f& pos, const int nObst = 0);
+    float projectP(const Vector3f& pos, const int nObst = 0);
+    Vector3f eeDisVec(const VectorXf &Pos, const int numberOfObstacle = 0) const;
+    float eeDis(const VectorXf &Pos, const int numberOfObstacle = 0) const;
+    void taskReorder(Task& stack,const std::vector<Vector3f>& contPoints, float d,float critic_d) const; /*TODO: std values*/
+
 	VectorXf control(vector<MatrixXf> Ji, vector<VectorXf> bi, vector<VectorXf> CPs, float lam = 0.1, float eps = 0.1);
 	Vector3f eeRepulsiveVelocity(const VectorXf &Pos, const int numberOfObstacle = 0) const;
 
-private:
 
-static bool isObstacle; // --> to verify wether there is an obstacle or not
+	float eeDis(const VectorXf &Pos, const int numberOfObstacle = 0) const;
+private:
+    static bool isObstacle; // --> to verify wether there is an obstacle or not
 
 
 	MatrixXf damped_pinv(MatrixXf J,float lam, float eps);
@@ -59,12 +68,6 @@ static bool isObstacle; // --> to verify wether there is an obstacle or not
 	MatrixXf tasksPriorityMatrix(MatrixXf bF,VectorXi tasksDim,float lam,float eps);
 
 	VectorXf FlaccoPrioritySolution(vector<MatrixXf> Ji, vector<VectorXf> bi, float lam = 0.1, float eps = 0.1);
-
-	Vector3f eeDisVec(const VectorXf &Pos, const int numberOfObstacle = 0) const;
-
-	// I moved the function to compute the repulsive velocities in the controller instead that in the manipulator since they are only use in the controller scheme
-
-	float eeDis(const VectorXf &Pos, const int numberOfObstacle = 0) const;
 
 	float repulsiveMagnitude(const VectorXf &Pos, const int numberOfObstacle = 0) const;
 

@@ -19,6 +19,24 @@ VectorXf FlaccoController::control(vector<MatrixXf> Ji, vector<VectorXf> bi, vec
 	// when we have multiple obstacles we also need to take care of that case
 	return FlaccoPrioritySolution(Ji, bi, lam, eps);
 }
+/*
+ * To project the jacobian and the task velocity along the distance from the obstacle
+ */
+MatrixXf FlaccoController::projectJ(const MatrixXf& J, const Vector3f& pos, const int nObst) {
+    if(J.rows() != 3) {
+        std::cout << "Error in J dimentions: number of rows should be 3.\n Returning J" << std::endl;
+        return J;
+    }
+    Vector3f n{-eeDisVec(pos,nObst)/eeDis(pos,nObst)};
+    return n.transpose()*J;
+}
+float FlaccoController::projectP(const Vector3f& pos, const int nObst) {
+    return projectJ(eeRepulsiveVelocity(pos,nObst),pos,nObst)(0);
+    /*
+     * Return the first (and only, due to the checks) element
+     * of the Matrix returned by projectJ
+     */
+}
 
 /* This is the function to compute the damped pseudoinverse
    - lam is the largest damping factor used near singularities
@@ -27,6 +45,10 @@ VectorXf FlaccoController::control(vector<MatrixXf> Ji, vector<VectorXf> bi, vec
 /* STATIC */
 bool FlaccoController::isObstacle{0};
 std::vector<Vector3f> FlaccoController::obstPos;
+void FlaccoController::newObst(const Vector3f newPos) {
+	if(obstPos.size() == 1) obstPos[0] = newPos;
+	else obstPos.push_back(newPos);
+}
 
 MatrixXf FlaccoController::damped_pinv(MatrixXf J,float lam, float eps){
 	JacobiSVD<MatrixXf> svd(J, ComputeFullU | ComputeFullV);
@@ -153,3 +175,40 @@ float FlaccoController::repulsiveMagnitude(const VectorXf &Pos, const int number
 Vector3f FlaccoController::eeRepulsiveVelocity(const VectorXf &Pos, const int numberOfObstacle) const{
 	return repulsiveMagnitude(Pos,numberOfObstacle) * eeDisVec(Pos,numberOfObstacle) / eeDis(Pos,numberOfObstacle);
 }
+
+void FlaccoController::taskReorder(Task& stack,const std::vector<Vector3f>& contPoints, float d,float critic_d) const {
+	int cycle = stack.size();
+	/*DISTANCE VECTOR*/
+	std::vector<float> dist(cycle,0);
+	for (int i = 0; i < cycle; ++i) {
+		int stackInd = stack.getInd()[i];
+		if(stackInd == 1) dist[stackInd] = d+1;  /* index 1 means a peculiar task
+												  * for which we add a fictitious distance
+												  */
+		else {
+			float temp_d = eeDis(contPoints[stackInd == 0 ? stackInd : stackInd - 1]); // ctrP has 1 element less than stack
+			dist[stackInd] = temp_d;
+		}
+	}
+	/*SWAPPING*/
+	int criticity{0};
+	for (int i = 0; i < cycle - 1; ++i) {
+		float di = dist[i];
+		float dj = dist[i+1];
+		if(dj < di) {
+			if(dj <= d && dj > critic_d && i > criticity){
+				stack.swapTask(i,i+1); dist[i] = dj; dist[i+1] = di;
+				i -= 2;
+			} else if(dj <= critic_d) {
+				stack.swapTask(i,i+1); dist[i] = dj; dist[i+1] = di; 	//swap task and distances so that in next step
+																	 	// won't be computed again
+
+				if(i>criticity) ++criticity;	// dimension of the critic distance vector increase if a critic
+												// swap is being done from outside the sub-vector
+
+				i == 0 ? i-=1 : i -= 2; //can't accede to dist[-1] in the next step if i == 0
+			}
+		}
+	}
+}
+

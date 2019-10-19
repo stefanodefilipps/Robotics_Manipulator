@@ -10,15 +10,15 @@ Write me @ menchetti.1713013@studenti.uniroma1.it
 
 VectorXf Manipulator::q;
 
-MatrixXf Manipulator::jacobian(const VectorXf& q0, float eps) const {
+MatrixXf Manipulator::jacobian(const VectorXf& q0,int upToJ, float eps) const {
+    upToJ = upToJ == -1 ? nJoints : upToJ;
 	/*JACOBIAN DIMENTION ASSIGNEMENT*/
-	MatrixXf J(3,static_cast<int> (q0.size()));
-	
+	MatrixXf J(3,upToJ);
 	/*COLUMN WISE ASSIGNEMENT OF JACOBIAN'S ELEMENTS*/
-	for (unsigned int i{0}; i < static_cast<int> (q0.size()); i++) {
-		VectorXf qEps{q0};
+	for (unsigned int i{0}; i < static_cast<int> (q0.head(upToJ).size()); ++i) {
+        VectorXf qEps{q0};
 		qEps[i] = q0[i] + eps;
-		J.col(i) = (dKin(qEps) - dKin(q0))/eps;
+		J.col(i) = (dKin(qEps,upToJ) - dKin(q0,upToJ))/eps;
 	}
 	return J;
 }
@@ -52,17 +52,19 @@ Matrix4f Manipulator::HTMat(const float var, const int i) const {
 }
 
 Vector4f Manipulator::dKinAlg(const VectorXf& vars, int upToNJoint, const int i) const {
-	upToNJoint = upToNJoint == 0 ? nJoints : upToNJoint;
+	upToNJoint = upToNJoint == -1 ? nJoints : upToNJoint;
 	Vector4f v{0,0,0,1};
 	Matrix4f H;
-	
-	/*CHECK ON DIMENTIONS*/
+
+
+	/*NO CHECK ON DIMENTIONS*/
+	/*
 	if(vars.size() != nJoints) {
 		std::cout << "Error\n";
 		return v;
-	}
+	}*/
 	H = HTMat(vars[i],i);
-	//std::cout << "HTMat @ " << i << "-th iteration: \n" << H << std::endl;
+
     /*RECURSION*/
     if(i == upToNJoint - 1) {
     	return H*v;
@@ -75,4 +77,21 @@ Vector4f Manipulator::dKinAlg(const VectorXf& vars, int upToNJoint, const int i)
 VectorXf Manipulator::update_configuration(const VectorXf& q_dot, const float T){
 	q = q + q_dot * T;
 	return q;
+}
+
+std::vector<Vector3f> Manipulator::controlPoints() const {
+	/*TODO: check for strange joints value*/
+	int nPoints = static_cast<int>(ctrPtsJoint.size());
+	std::vector<Vector3f> tmp(nPoints);
+	for (int i = 0; i < nPoints; ++i) {
+		tmp[i] = dKin(q,ctrPtsJoint[i]);
+	}
+	return tmp;
+}
+void Manipulator::setCtrPtsJoints(const std::vector<int> pts) {
+	/*UP TO NOW IT WON'T CHECK DIMENSIONS ON ctrPtsJoints*/
+	int nPoints = static_cast<int>(pts.size());
+	for (int i = 0; i < nPoints; ++i) {
+		ctrPtsJoint.push_back(pts[i]);
+	}
 }
