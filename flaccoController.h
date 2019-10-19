@@ -28,11 +28,12 @@ static void newObst(const Vector3f newPos);
 	// rho_: the half length of the control point bounding box
 	// v_max_: The maximum velocity in module that the repulsive vector can get
 	// ks is a vector containing the diagonal element of the proportional parameters of the cartesian control scheme
-	FlaccoController(float alpha_, float rho_, float v_max_, VectorXf ks){
+	FlaccoController(float alpha_, float rho_, float v_max_, VectorXf ks, vector<Vector3f> obstPos_){
 		alpha = alpha_;
 		rho = rho_;
 		v_max = v_max_;
 		K = ks.asDiagonal();
+		obstPos = obstPos_;
 	}
 
 	/*
@@ -46,13 +47,15 @@ static void newObst(const Vector3f newPos);
 		- p_ds is a vector containing the feedforward trajectory values for implementing a simple cartesian control scheme and thei ordering is the same as Ji
 	*/
 
-	VectorXf control(vector<MatrixXf> Ji, vector<VectorXf> bi, vector<VectorXf> obstacles, vector<VectorXf> CPs, vector<VectorXf> p_ds, float lam = 0.1, float eps = 0.1);
+
 	MatrixXf projectJ(const MatrixXf& J, const Vector3f& pos, const int nObst = 0);
     float projectP(const Vector3f& pos, const int nObst = 0);
     Vector3f eeDisVec(const VectorXf &Pos, const int numberOfObstacle = 0) const;
     float eeDis(const VectorXf &Pos, const int numberOfObstacle = 0) const;
-    Vector3f eeRepulsiveVelocity(const VectorXf &Pos, const int numberOfObstacle = 0) const;
     void taskReorder(Task& stack,const std::vector<Vector3f>& contPoints, float d,float critic_d) const; /*TODO: std values*/
+
+	VectorXf control(vector<MatrixXf> Ji, vector<VectorXf> bi, vector<VectorXf> CPs, float lam = 0.1, float eps = 0.1);
+	Vector3f eeRepulsiveVelocity(const VectorXf &Pos, const int numberOfObstacle = 0) const;
 
 
 	float eeDis(const VectorXf &Pos, const int numberOfObstacle = 0) const;
