@@ -47,18 +47,14 @@ static void newObst(const Vector3f newPos);
 		- p_ds is a vector containing the feedforward trajectory values for implementing a simple cartesian control scheme and thei ordering is the same as Ji
 	*/
 
-
+	VectorXf control(vector<MatrixXf> Ji, vector<MatrixXf> bi, float lam = 0.1, float eps = 0.1);
 	MatrixXf projectJ(const MatrixXf& J, const Vector3f& pos, const int nObst = 0);
     float projectP(const Vector3f& pos, const int nObst = 0);
     Vector3f eeDisVec(const VectorXf &Pos, const int numberOfObstacle = 0) const;
     float eeDis(const VectorXf &Pos, const int numberOfObstacle = 0) const;
+    Vector3f eeRepulsiveVelocity(const VectorXf &Pos, const int numberOfObstacle = 0) const;
     void taskReorder(Task& stack,const std::vector<Vector3f>& contPoints, float d,float critic_d) const; /*TODO: std values*/
-
-	VectorXf control(vector<MatrixXf> Ji, vector<VectorXf> bi, vector<VectorXf> CPs, float lam = 0.1, float eps = 0.1);
-	Vector3f eeRepulsiveVelocity(const VectorXf &Pos, const int numberOfObstacle = 0) const;
-
-
-	float eeDis(const VectorXf &Pos, const int numberOfObstacle = 0) const;
+    
 private:
     static bool isObstacle; // --> to verify wether there is an obstacle or not
 
@@ -67,7 +63,7 @@ private:
 
 	MatrixXf tasksPriorityMatrix(MatrixXf bF,VectorXi tasksDim,float lam,float eps);
 
-	VectorXf FlaccoPrioritySolution(vector<MatrixXf> Ji, vector<VectorXf> bi, float lam = 0.1, float eps = 0.1);
+	VectorXf FlaccoPrioritySolution(vector<MatrixXf> Ji, vector<MatrixXf> bi, float lam = 0.1, float eps = 0.1);
 
 	float repulsiveMagnitude(const VectorXf &Pos, const int numberOfObstacle = 0) const;
 

@@ -26,27 +26,27 @@ CONFIG += shared
 INCLUDEPATH += "../include"
 
 *-msvc* {
-	QMAKE_CXXFLAGS += -O2
-	QMAKE_CXXFLAGS += -W3
+    QMAKE_CXXFLAGS += -O2
+    QMAKE_CXXFLAGS += -W3
 }
 *-g++* {
-	QMAKE_CXXFLAGS += -O3
-	QMAKE_CXXFLAGS += -Wall
-	QMAKE_CXXFLAGS += -Wno-unused-parameter
-	QMAKE_CXXFLAGS += -Wno-strict-aliasing
-	QMAKE_CXXFLAGS += -Wno-empty-body
-	QMAKE_CXXFLAGS += -Wno-write-strings
+    QMAKE_CXXFLAGS += -O3
+    QMAKE_CXXFLAGS += -Wall
+    QMAKE_CXXFLAGS += -Wno-unused-parameter
+    QMAKE_CXXFLAGS += -Wno-strict-aliasing
+    QMAKE_CXXFLAGS += -Wno-empty-body
+    QMAKE_CXXFLAGS += -Wno-write-strings
 
-	QMAKE_CXXFLAGS += -Wno-unused-but-set-variable
-	QMAKE_CXXFLAGS += -Wno-unused-local-typedefs
-	QMAKE_CXXFLAGS += -Wno-narrowing
+    QMAKE_CXXFLAGS += -Wno-unused-but-set-variable
+    QMAKE_CXXFLAGS += -Wno-unused-local-typedefs
+    QMAKE_CXXFLAGS += -Wno-narrowing
 
-	QMAKE_CFLAGS += -O3
-	QMAKE_CFLAGS += -Wall
-	QMAKE_CFLAGS += -Wno-strict-aliasing
-	QMAKE_CFLAGS += -Wno-unused-parameter
-	QMAKE_CFLAGS += -Wno-unused-but-set-variable
-	QMAKE_CFLAGS += -Wno-unused-local-typedefs
+    QMAKE_CFLAGS += -O3
+    QMAKE_CFLAGS += -Wall
+    QMAKE_CFLAGS += -Wno-strict-aliasing
+    QMAKE_CFLAGS += -Wno-unused-parameter
+    QMAKE_CFLAGS += -Wno-unused-but-set-variable
+    QMAKE_CFLAGS += -Wno-unused-local-typedefs
 }
 
 win32 {
@@ -78,6 +78,7 @@ HEADERS += \
     /home/stefano/V-REP_PRO_EDU_V3_6_2_Ubuntu18_04/programming/v_rep_skeleton_integration/flaccoController.h \
     /home/stefano/V-REP_PRO_EDU_V3_6_2_Ubuntu18_04/programming/v_rep_skeleton_integration/Manipulator.h \
     /home/stefano/V-REP_PRO_EDU_V3_6_2_Ubuntu18_04/programming/v_rep_skeleton_integration/path_trajectory.h \
+    /home/stefano/V-REP_PRO_EDU_V3_6_2_Ubuntu18_04/programming/v_rep_skeleton_integration/Task.h \
 
 
 SOURCES += \
@@ -88,12 +89,8 @@ SOURCES += \
     /home/stefano/V-REP_PRO_EDU_V3_6_2_Ubuntu18_04/programming/v_rep_skeleton_integration/Manipulator.cpp \
     /home/stefano/V-REP_PRO_EDU_V3_6_2_Ubuntu18_04/programming/v_rep_skeleton_integration/flaccoController.cpp \
     /home/stefano/V-REP_PRO_EDU_V3_6_2_Ubuntu18_04/programming/v_rep_skeleton_integration/path_trajectory.cpp \
+    /home/stefano/V-REP_PRO_EDU_V3_6_2_Ubuntu18_04/programming/v_rep_skeleton_integration/Task.cpp \
 
 INCLUDEPATH += /home/stefano/V-REP_PRO_EDU_V3_6_2_Ubuntu18_04/programming/common \
 /home/stefano/V-REP_PRO_EDU_V3_6_2_Ubuntu18_04/programming/remoteApi \
 /home/stefano/V-REP_PRO_EDU_V3_6_2_Ubuntu18_04/programming/include/stack
-
-
-
-
-

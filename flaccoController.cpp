@@ -11,7 +11,7 @@
 using namespace std;
 using namespace Eigen;
 
-VectorXf FlaccoController::control(vector<MatrixXf> Ji, vector<VectorXf> bi, vector<VectorXf> CPs, float lam, float eps){
+VectorXf FlaccoController::control(vector<MatrixXf> Ji, vector<MatrixXf> bi, float lam, float eps){
 	
 	// In this function I implement a simple kinematic control of Cartisian motion con feedback for the end effector
 	// I add the repulsive velocity to the ee task velocity and in this case I have only one obstacle
@@ -122,12 +122,12 @@ MatrixXf FlaccoController::tasksPriorityMatrix(MatrixXf bF,VectorXi tasksDim,flo
    - eps > 0 monitors the smallest singular value defining the range of the damping action*/
 
 
-VectorXf FlaccoController::FlaccoPrioritySolution(vector<MatrixXf> Ji, vector<VectorXf> bi, float lam, float eps){
+VectorXf FlaccoController::FlaccoPrioritySolution(vector<MatrixXf> Ji, vector<MatrixXf> bi, float lam, float eps){
 	int dim_J = 0;
 	int dim_b = 0;
 	for(int i = 0; i < Ji.size(); ++i){
 		dim_J = dim_J + Ji[i].rows();
-		dim_b = dim_b + bi[i].size();
+		dim_b = dim_b + bi[i].rows();
 	}
 	/* I first need to create the matrices for the augmented task so I stack all the Ji and bi matrices in order to get the augmented task matrix*/
 	MatrixXf J(dim_J,Ji[0].cols());
@@ -136,7 +136,7 @@ VectorXf FlaccoController::FlaccoPrioritySolution(vector<MatrixXf> Ji, vector<Ve
 	int start = 0;
 	for(int i = 0; i < Ji.size(); ++i){
 		J.block(start,0,Ji[i].rows(),Ji[i].cols()) = Ji[i];
-		b.block(start,0,bi[i].size(),1) = bi[i];
+		b.block(start,0,bi[i].rows(),1) = bi[i];
 		tasksDim(i) = bi[i].rows();
 		start = start + Ji[i].rows();
 	}

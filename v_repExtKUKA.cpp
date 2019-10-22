@@ -25,10 +25,13 @@
 #include "Manipulator.h"
 #include "path_trajectory.h"
 #include "flaccoController.h"
+#include "Task.h"
 #include <vector>
 #include <math.h>
 #include <cmath>
 #include <string>
+ostream& operator<<(ostream& s, const vector<Eigen::MatrixXf>& m);
+ostream& operator<<(ostream& s, const vector<int>& m);
 
 #define _USE_MATH_DEFINES
 
@@ -71,6 +74,9 @@ simInt joint_6;
 simInt joint_7;
 simInt obstacle;
 
+ofstream joint_angles;
+ofstream joint_velocities;
+
 MatrixXf DH(7,4);
 float d1 = 0.4;
 float d2 = 0.39;
@@ -93,18 +99,23 @@ float alpha;
 VectorXf p_in(3);
 VectorXf p_fin(3);
 VectorXf p_d(3);
-MatrixXf J;
+MatrixXf J1;
 MatrixXf J2(1,7);
-VectorXf b_d(3);
-VectorXf b(3);
+MatrixXf J3(1,7);
+MatrixXf J4(1,7);
+MatrixXf b_d(3,1);
+MatrixXf b1(3,1);
 MatrixXf K(3,3);
-VectorXf b2(1);
+MatrixXf b2(1,1);
+MatrixXf b3(1,1);
+MatrixXf b4(1,1);
 VectorXf C(2);
-vector<MatrixXf> Ji;
-vector<VectorXf> bi;
+//vector<MatrixXf> Ji;
+//vector<VectorXf> bi;
 VectorXf q_dot(7);
 Vector3f obstPos;
 Vector3f p_desired_ee;
+vector<int> cPoints;
 
 Manipulator* man;
 PathTrajectory* path;
@@ -297,14 +308,42 @@ VREP_DLLEXPORT void* v_repMessage(int message,int* auxiliaryData,void* customDat
 			// To the controller we need to pass the stack of Jacobian and tasks velocities, The world positions of the control points,
 			// the world obstacles position and the feedforward term for the ee position for the cartesian control scheme
 			// For now the only control point is simply the end effector 
-            vector<VectorXf> CPs{man->dKin(q)};
-            J = man->jacobian(q);
-            b = path->p_dot_d(t) + controller->eeRepulsiveVelocity(CPs[0],0);
-            p_desired_ee = p_desired_ee + T * b;
-            b = b + K * (p_desired_ee - man->dKin(q));
-            Ji = {J,J2};
-            bi = {b,b2};
-            q_dot = controller->control(Ji, bi, CPs, 0.1, 0.1);
+			vector<Vector3f> cps_positions = man->controlPoints();
+            J1 = man->jacobian(q);
+            b1 = path->p_dot_d(t) + controller->eeRepulsiveVelocity(man->dKin(q),0);
+            p_desired_ee = p_desired_ee + T * b1;
+            b1 = b1 + K * (p_desired_ee - man->dKin(q));
+            // Remeber that in the stack of Jacobians each Jacobian needs to have 7 column because we have 7 degree of freedom
+            // The partial Jacobian computed up to p joint has dimension 3xp but i need to extend it to 3x7 adding to it a 3x(7-p) submatrix
+            // of all 0s since the kinematics of p point doesn't depend on the 7-p successive joint.
+            // Moreover, since the jacobian of the control points need to be normalized by the direction vector 1x3 i will obtain a final matrix
+            // of 1x7 where all the 7-p elements will be surly 0s. Therefore It is the same as doing computation with 3xp matrix and then assing the 
+            // resulting submatrix to the correct part of the 1x7 final matrix
+            J3 << 0.0,0.0,0.0,0.0,0.0,0.0,0.0;
+            J3.block(0,0,1,cPoints[1]) = controller->projectJ(man->jacobian(q,cPoints[1]),cps_positions[1]);
+            b3 << controller->projectP(cps_positions[1]);
+            J4 << 0.0,0.0,0.0,0.0,0.0,0.0,0.0;
+            J4.block(0,0,1,cPoints[2]) = controller->projectJ(man->jacobian(q,cPoints[2]),cps_positions[2]);
+            b4 << controller->projectP(cps_positions[2]);
+            vector<MatrixXf> Ji{J1,J2,J3,J4};
+            vector<MatrixXf> bi{b1,b2,b3,b4};
+            Task stack_Ji{Ji};
+            Task stack_bi{bi};
+            // Reorder the Jacobian and the Velocity task. I am calling twice the taskReorder function, but same positions so i will have same final ordering
+            controller->taskReorder(stack_Ji,cps_positions,0.4,0.2);
+            controller->taskReorder(stack_bi,cps_positions,0.4,0.2);
+            q_dot = controller->control(stack_Ji.getStack(),stack_bi.getStack());
+            for (int i = 0; i < 6; ++i)
+            {
+            	joint_angles << q(i);
+            	joint_angles << ";";
+            	joint_velocities << q_dot(i);
+            	joint_velocities << ";";
+            }
+            joint_angles << q(6);
+        	joint_angles << "\n";
+        	joint_velocities << q_dot(6);
+        	joint_velocities << "\n";
             q = man->update_configuration(q_dot,T);
             simSetJointPosition(joint_1,q(0));
             simSetJointPosition(joint_2,q(1));
@@ -365,11 +404,15 @@ VREP_DLLEXPORT void* v_repMessage(int message,int* auxiliaryData,void* customDat
          -M_PI_2, 0, 0, 1,
                0, 0, d3, 1;
         man = new Manipulator(DH,q,z_offset);
+        cPoints = {7,4,2};
+		man->setCtrPtsJoints(cPoints);
         VectorXf ks(3);
         ks << 20.0,20.0,20.0;
         K = ks.asDiagonal();
         vector<Vector3f> obstacles{obstPos};
         controller = new FlaccoController(alpha,rho,v_max,ks,obstacles);
+        joint_angles.open("joint_angles.txt");
+        joint_velocities.open("joint_velocities.txt");
         if(path_.compare("linear") == 0){
 
 	        p_in << man->dKin(q)[0],
@@ -533,6 +576,8 @@ VREP_DLLEXPORT void* v_repMessage(int message,int* auxiliaryData,void* customDat
 
         //for static simulation
         cout<<"New Simulation just ended\n";
+        joint_angles.close();
+        joint_velocities.close(); 
 
         /*
         torque.close();
