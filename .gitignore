@@ -1,0 +1,6 @@
+#CLION files
+.idea/
+
+#compile results
+*.o
+*.a
