@@ -4,3 +4,6 @@
 #compile results
 *.o
 *.a
+
+Makefile
+MAKEFILE
