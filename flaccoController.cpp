@@ -176,22 +176,30 @@ Vector3f FlaccoController::eeRepulsiveVelocity(const VectorXf &Pos, const int nu
 	return repulsiveMagnitude(Pos,numberOfObstacle) * eeDisVec(Pos,numberOfObstacle) / eeDis(Pos,numberOfObstacle);
 }
 
-void FlaccoController::taskReorder(Task& stack,const std::vector<Vector3f>& contPoints) const {
-	int cycle = stack.size();
+void FlaccoController::taskReorder(Task& stack,const std::vector<Vector3f>& contPoints /*TODO: swap timing to implement a waiting time before the new swap*/) const {
 	/*DISTANCE VECTOR*/
+	// Will be the already prioritized vector
+	/*
+	int cycle = stack.size();
 	std::vector<float> dist(cycle,0);
 	for (int i = 0; i < cycle; ++i) {
 		int stackInd = stack.getInd()[i];
-		if(stackInd == 1) dist[stackInd] = d+1;  /* index 1 means a peculiar task
-												  * for which we add a fictitious distance
-												  */
+		if(stackInd == 1) dist[stackInd] = distance_warning+1;  // index 1 means a peculiar task
+												                // for which we add a fictitious distance
+												                //
 		else {
 			float temp_d = eeDis(contPoints[stackInd == 0 ? stackInd : stackInd - 1]); // ctrP has 1 element less than stack
 			dist[stackInd] = temp_d;
 		}
-	}
+	}*/
+	//TODO: distances
+
 	/*SWAPPING*/
+	// Will be implemented differently
+	// IDEA IS: swap the already ordered vector, take criticity from the position of index "0" in stackInd (ee actual priority)
+	/*
 	int criticity{0};
+
 	for (int i = 0; i < cycle - 1; ++i) {
 		float di = dist[i];
 		float dj = dist[i+1];
@@ -209,6 +217,7 @@ void FlaccoController::taskReorder(Task& stack,const std::vector<Vector3f>& cont
 				i == 0 ? i-=1 : i -= 2; //can't accede to dist[-1] in the next step if i == 0
 			}
 		}
-	}
+	}*/
+	// TODO: swapping
 }
 
