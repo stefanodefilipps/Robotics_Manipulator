@@ -39,9 +39,11 @@ void Task::swapTask(int i, int j) {
 }
 
 Eigen::MatrixXf Task::operator[](int k) const {
+	//Prioritized access
     return stack[indices[k]];
 }
 
 Eigen::MatrixXf Task::operator()(int k) const {
+	//Standard access
 	return stack[k];
 }

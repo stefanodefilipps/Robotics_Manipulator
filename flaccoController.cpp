@@ -193,6 +193,8 @@ void FlaccoController::taskReorder(Task& stack,const std::vector<Vector3f>& cont
 		}
 	}*/
 	//TODO: distances
+	int size = stack.size();
+	std::vector<float> dist(size,0);
 
 	/*SWAPPING*/
 	// Will be implemented differently
