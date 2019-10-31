@@ -176,7 +176,7 @@ Vector3f FlaccoController::eeRepulsiveVelocity(const VectorXf &Pos, const int nu
 	return repulsiveMagnitude(Pos,numberOfObstacle) * eeDisVec(Pos,numberOfObstacle) / eeDis(Pos,numberOfObstacle);
 }
 
-void FlaccoController::taskReorder(Task& stack,const std::vector<Vector3f>& contPoints, float d,float critic_d) const {
+void FlaccoController::taskReorder(Task& stack,const std::vector<Vector3f>& contPoints) const {
 	int cycle = stack.size();
 	/*DISTANCE VECTOR*/
 	std::vector<float> dist(cycle,0);
@@ -196,10 +196,10 @@ void FlaccoController::taskReorder(Task& stack,const std::vector<Vector3f>& cont
 		float di = dist[i];
 		float dj = dist[i+1];
 		if(dj < di) {
-			if(dj <= d && dj > critic_d && i > criticity){
+			if(dj <= distance_warning && dj > critic_d && i > criticity){
 				stack.swapTask(i,i+1); dist[i] = dj; dist[i+1] = di;
 				i -= 2;
-			} else if(dj <= critic_d) {
+			} else if(dj <= distance_critic) {
 				stack.swapTask(i,i+1); dist[i] = dj; dist[i+1] = di; 	//swap task and distances so that in next step
 																	 	// won't be computed again
 
