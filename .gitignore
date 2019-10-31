@@ -7,3 +7,6 @@
 
 Makefile
 MAKEFILE
+
+#temporary files
+*~
