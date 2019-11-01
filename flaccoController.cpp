@@ -176,12 +176,12 @@ Vector3f FlaccoController::eeRepulsiveVelocity(const VectorXf &Pos, const int nu
 	return repulsiveMagnitude(Pos,numberOfObstacle) * eeDisVec(Pos,numberOfObstacle) / eeDis(Pos,numberOfObstacle);
 }
 
-void FlaccoController::taskReorder(Task& stack,const std::vector<Vector3f>& contPoints) const { //TODO: check timing -> in main()
+void FlaccoController::taskReorder(Task& stack,const std::vector<Vector3f>& contPoints) const {
 	/*DISTANCES IN THE CANONICAL ORDER*/
-	int size = stack.size(), danger{0};
-	std::vector<float> dist(size);
+	int sizeMax = stack.size(), danger{0};
+	std::vector<float> dist(sizeMax);
 	vector<int> stackInd = stack.getInd();
-	for (int i = 0; i < size; ++i) {
+	for (int i = 0; i < sizeMax; ++i) {
 		int index = stackInd[i];
 		index != 1 ? dist[index] = eeDis(contPoints[index == 0 ? index : index - 1]) : dist[index] = distance_warning + 1; //sum-up of the previous condition
 		if(index == 0) danger = i;
@@ -216,6 +216,7 @@ void FlaccoController::taskReorder(Task& stack,const std::vector<Vector3f>& cont
 		}
 	}*/
 	// TODO: swapping: use task object!!!
+	int initial{danger+1}, final{sizeMax};
 	for (int j = 0; j < 2; ++j) {
 		// first iteration is for the relaxed sub-vector
 		// second one is for the critic sub-vector
@@ -223,10 +224,19 @@ void FlaccoController::taskReorder(Task& stack,const std::vector<Vector3f>& cont
 		// After swapping the first, if there is any critic situation, we will
 		// augment the length of the critic sub-vector and reorder that, knowing that the added components
 		// are actually critic ones.
-		for (int i = /*TODO*/; i < /*TODO*/; ++i) {
-			for (int k = /*TODO*/; k < /*TODO*/; ++k) {
-
+		for (int i = initial; i < final; ++i) {
+		    float min{distT[i]};
+		    int minK{i};
+			for (int k = initial; k < i; ++k) {
+                // Find the minimum
+			    if(distT[k] < min) {
+			        min = distT[k];
+			        minK = k;
+			    }
 			}
+			// Replace the minimum
+			stack.swapTask(i,minK);
+			distT.swapTask(i,minK);
 		}
 		/*TODO: update parameters for the second iteration on "j"*/
 	}
