@@ -176,25 +176,20 @@ Vector3f FlaccoController::eeRepulsiveVelocity(const VectorXf &Pos, const int nu
 	return repulsiveMagnitude(Pos,numberOfObstacle) * eeDisVec(Pos,numberOfObstacle) / eeDis(Pos,numberOfObstacle);
 }
 
-void FlaccoController::taskReorder(Task& stack,const std::vector<Vector3f>& contPoints /*TODO: swap timing to implement a waiting time before the new swap*/) const {
-	/*DISTANCE VECTOR*/
-	// Will be the already prioritized vector
-	/*
-	int cycle = stack.size();
-	std::vector<float> dist(cycle,0);
-	for (int i = 0; i < cycle; ++i) {
-		int stackInd = stack.getInd()[i];
-		if(stackInd == 1) dist[stackInd] = distance_warning+1;  // index 1 means a peculiar task
-												                // for which we add a fictitious distance
-												                //
-		else {
-			float temp_d = eeDis(contPoints[stackInd == 0 ? stackInd : stackInd - 1]); // ctrP has 1 element less than stack
-			dist[stackInd] = temp_d;
-		}
-	}*/
-	//TODO: distances
-	int size = stack.size();
-	std::vector<float> dist(size,0);
+void FlaccoController::taskReorder(Task& stack,const std::vector<Vector3f>& contPoints) const { //TODO: check timing -> in main()
+	/*DISTANCES IN THE CANONICAL ORDER*/
+	int size = stack.size(), danger{0};
+	std::vector<float> dist(size);
+	vector<int> stackInd = stack.getInd();
+	for (int i = 0; i < size; ++i) {
+		int index = stackInd[i];
+		index != 1 ? dist[index] = eeDis(contPoints[index == 0 ? index : index - 1]) : dist[index] = distance_warning + 1; //sum-up of the previous condition
+		if(index == 0) danger = i;
+	}
+
+	/*TASK'S ASSOCIATED DISTANCES*/
+	Task distT{dist};
+	distT.setIndices(stackInd);
 
 	/*SWAPPING*/
 	// Will be implemented differently
@@ -220,6 +215,19 @@ void FlaccoController::taskReorder(Task& stack,const std::vector<Vector3f>& cont
 			}
 		}
 	}*/
-	// TODO: swapping
-}
+	// TODO: swapping: use task object!!!
+	for (int j = 0; j < 2; ++j) {
+		// first iteration is for the relaxed sub-vector
+		// second one is for the critic sub-vector
+		//
+		// After swapping the first, if there is any critic situation, we will
+		// augment the length of the critic sub-vector and reorder that, knowing that the added components
+		// are actually critic ones.
+		for (int i = /*TODO*/; i < /*TODO*/; ++i) {
+			for (int k = /*TODO*/; k < /*TODO*/; ++k) {
 
+			}
+		}
+		/*TODO: update parameters for the second iteration on "j"*/
+	}
+}

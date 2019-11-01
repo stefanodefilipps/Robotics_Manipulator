@@ -19,6 +19,7 @@ public:
 	int size() const;
 	// SET FUNCTIONS
     void set(const std::vector<Eigen::MatrixXf>& stack_);
+    void setIndices(const std::vector<int> indices_);
     // METHODS
     void goUpTo(int start, int end);
     void swapTask(int i, int j);

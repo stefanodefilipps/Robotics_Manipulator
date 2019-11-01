@@ -24,6 +24,10 @@ void Task::set(const std::vector<Eigen::MatrixXf>& stack_) {
 	stack = stack_;
 }
 
+void Task::setIndices(const std::vector<int> indices_){
+	indices = indices_;
+}
+
 void Task::goUpTo(int start, int end) {
 	int temp{indices[start]};
 	for (int i = start; i > end; --i) {
