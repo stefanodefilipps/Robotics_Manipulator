@@ -35,6 +35,9 @@ public:
 	    int actSize = static_cast<int>( indices.size() );
 	    indices.push_back(actSize);
 	}
+	void setIndices(const std::vector<int>& indices_) {
+	    indices = indices_;
+	}
     // METHODS
     void goUpTo(int start, int end) {
         int temp{indices[start]};

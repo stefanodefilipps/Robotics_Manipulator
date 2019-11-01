@@ -176,7 +176,7 @@ Vector3f FlaccoController::eeRepulsiveVelocity(const VectorXf &Pos, const int nu
 	return repulsiveMagnitude(Pos,numberOfObstacle) * eeDisVec(Pos,numberOfObstacle) / eeDis(Pos,numberOfObstacle);
 }
 
-void FlaccoController::taskReorder(Task& stack,const std::vector<Vector3f>& contPoints) const {
+void FlaccoController::taskReorder(Task<Eigen::MatrixXf>& stack,const std::vector<Vector3f>& contPoints) const {
 	/*DISTANCES IN THE CANONICAL ORDER*/
 	int sizeMax = stack.size(), danger{0};
 	std::vector<float> dist(sizeMax);
@@ -188,7 +188,7 @@ void FlaccoController::taskReorder(Task& stack,const std::vector<Vector3f>& cont
 	}
 
 	/*TASK'S ASSOCIATED DISTANCES*/
-	Task distT(dist);
+	Task<float> distT(dist);
 	distT.setIndices(stackInd);
 
 	/*SWAPPING*/

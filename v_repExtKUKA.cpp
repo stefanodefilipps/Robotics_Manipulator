@@ -330,8 +330,8 @@ VREP_DLLEXPORT void* v_repMessage(int message,int* auxiliaryData,void* customDat
             Task stack_Ji{Ji};
             Task stack_bi{bi};
             // Reorder the Jacobian and the Velocity task. I am calling twice the taskReorder function, but same positions so i will have same final ordering
-            controller->taskReorder(stack_Ji,cps_positions,0.4,0.2);
-            controller->taskReorder(stack_bi,cps_positions,0.4,0.2);
+            controller->taskReorder(stack_Ji,cps_positions);
+            controller->taskReorder(stack_bi,cps_positions);
             q_dot = controller->control(stack_Ji.getStack(),stack_bi.getStack());
             for (int i = 0; i < 6; ++i)
             {
