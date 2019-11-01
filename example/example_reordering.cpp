@@ -17,8 +17,7 @@ int main() {
 		  0, 1, 0, 1;
 	Vector3f q_in{0,0,0};
 	Manipulator man{DH,q_in};           			/*Manipulator*/
-	FlaccoController contr{0,0,0,q_in}; 			/*Controller*/
-	Eigen::MatrixXf J1(2,2);
+	FlaccoController contr{0,0,0,q_in,1.42,1}; 			/*Controller*/	Eigen::MatrixXf J1(2,2);
 	Eigen::MatrixXf J2(3,3);
 	Eigen::MatrixXf J3(4,4);
 	Eigen::MatrixXf J4(5,5);
@@ -31,7 +30,7 @@ int main() {
 	vector<Vector3f> ctrPosition = man.controlPoints();	/*Control point positions*/
 	cout << "Indices before task Reordering:\n" << stack.getInd() << endl;
 	//cout << "Stack before task Reordering:\n" << stack.getStack() << endl;
-	contr.taskReorder(stack,ctrPosition,1.42,1);
+	contr.taskReorder(stack,ctrPosition);
 	cout << "Indices after task Reordering:\n" << stack.getInd() << endl;
 	//cout << "Stack after task Reordering:\n" << stack.getStack() << endl;
 	cout << "\n---------------------\n";

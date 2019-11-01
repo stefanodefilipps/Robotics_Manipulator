@@ -188,7 +188,7 @@ void FlaccoController::taskReorder(Task& stack,const std::vector<Vector3f>& cont
 	}
 
 	/*TASK'S ASSOCIATED DISTANCES*/
-	Task distT{dist};
+	Task distT(dist);
 	distT.setIndices(stackInd);
 
 	/*SWAPPING*/
@@ -215,7 +215,6 @@ void FlaccoController::taskReorder(Task& stack,const std::vector<Vector3f>& cont
 			}
 		}
 	}*/
-	// TODO: swapping: use task object!!!
 	int initial{danger+1}, final{sizeMax};
 	for (int j = 0; j < 2; ++j) {
 		// first iteration is for the relaxed sub-vector
@@ -237,7 +236,14 @@ void FlaccoController::taskReorder(Task& stack,const std::vector<Vector3f>& cont
 			// Replace the minimum
 			stack.swapTask(i,minK);
 			distT.swapTask(i,minK);
+            // update only if it is in the first iteration on j
+            // i.e. if we are sorting the non critical vector
+			danger += distT[i] < distance_critic && j == 0;
 		}
-		/*TODO: update parameters for the second iteration on "j"*/
+		// reset the values so that we sort from the beginning up to danger
+		// that means we include also the critic tasks coming from the non
+		// critical part
+		initial = 0;
+		final = danger;
 	}
 }
