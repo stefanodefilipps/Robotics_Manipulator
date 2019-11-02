@@ -22,7 +22,7 @@ int main() {
     vector<Eigen::Vector3f> obstPos;
     Vector3f oPos{2,1,0};
     obstPos.push_back(oPos);
-    FlaccoController contr(0,0,0,ks,obstPos,1.42,1); 			/*Controller*/
+    FlaccoController contr(0,0,0,ks,obstPos,1.4,1); 			/*Controller*/
 	Eigen::MatrixXf J1(2,2);
 	Eigen::MatrixXf J2(3,3);
 	Eigen::MatrixXf J3(4,4);
