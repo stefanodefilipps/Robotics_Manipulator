@@ -5,6 +5,10 @@
 *.o
 *.a
 
+#compile file
 Makefile
 MAKEFILE
 CMake*
+
+#testing folder
+~test/
