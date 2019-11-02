@@ -226,7 +226,7 @@ void FlaccoController::taskReorder(Task<Eigen::MatrixXf>& stack,const std::vecto
 		for (int i = initial; i < final; ++i) {
 		    float min{distT[i]};
 		    int minK{i};
-			for (int k = initial; k < i; ++k) {
+			for (int k = i; k < final; ++k) {
                 // Find the minimum
 			    if(distT[k] < min) {
 			        min = distT[k];
@@ -234,8 +234,10 @@ void FlaccoController::taskReorder(Task<Eigen::MatrixXf>& stack,const std::vecto
 			    }
 			}
 			// Replace the minimum
-			stack.swapTask(i,minK);
-			distT.swapTask(i,minK);
+			if(min < distance_warning) {
+				stack.goUpTo(minK, i);
+				distT.goUpTo(minK, i);
+			}
             // update only if it is in the first iteration on j
             // i.e. if we are sorting the non critical vector
 			danger += distT[i] < distance_critic && j == 0;
