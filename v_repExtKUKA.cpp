@@ -86,6 +86,7 @@ float d3 = 0.078;
 VectorXf q(7);
 
 float t;
+float lastT:
 float T;
 float L;
 float s;
@@ -303,7 +304,6 @@ VREP_DLLEXPORT void* v_repMessage(int message,int* auxiliaryData,void* customDat
 
 	if (message==sim_message_eventcallback_mainscriptabouttobecalled)
 	{ // The main script is about to be run (only called while a simulation is running (and not paused!))
-
 		if(t <= path->get_end_condition()){
 			// To the controller we need to pass the stack of Jacobian and tasks velocities, The world positions of the control points,
 			// the world obstacles position and the feedforward term for the ee position for the cartesian control scheme
@@ -330,8 +330,11 @@ VREP_DLLEXPORT void* v_repMessage(int message,int* auxiliaryData,void* customDat
             Task stack_Ji{Ji};
             Task stack_bi{bi};
             // Reorder the Jacobian and the Velocity task. I am calling twice the taskReorder function, but same positions so i will have same final ordering
-            controller->taskReorder(stack_Ji,cps_positions);
-            controller->taskReorder(stack_bi,cps_positions);
+            if(t - lastT >= 5*T) {
+				controller->taskReorder(stack_Ji, cps_positions);
+				controller->taskReorder(stack_bi, cps_positions);
+				lastT = t;
+			}
             q_dot = controller->control(stack_Ji.getStack(),stack_bi.getStack());
             for (int i = 0; i < 6; ++i)
             {
@@ -393,6 +396,7 @@ VREP_DLLEXPORT void* v_repMessage(int message,int* auxiliaryData,void* customDat
         cout << "Insert the path type\n";
         cin >> path_;
         t = 0.0;
+        lastT = t;
 		T = 0.005;
 		q << 0,-M_PI_2,0,-M_PI_2,0,0,0;
 
