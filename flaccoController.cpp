@@ -189,7 +189,7 @@ void FlaccoController::taskReorder(Task<Eigen::MatrixXf>& stack,const std::vecto
 
 	/*TASK'S ASSOCIATED DISTANCES*/
 	Task<float> distT(dist);
-	distT.setIndices(stackInd);
+	//distT.setIndices(stackInd);// <- we will use the standard order
 
 	/*REORDERING*/
 	int initial{danger+1}, final{sizeMax};
@@ -212,7 +212,7 @@ void FlaccoController::taskReorder(Task<Eigen::MatrixXf>& stack,const std::vecto
 			}
 			// Replace the minimum
 			if(min < distance_warning) {
-				stack.goUpTo(minK, i);
+				//stack.goUpTo(minK, i);// <- we will only reorder distT and push its indices into stack
 				distT.goUpTo(minK, i);
 				switched = true;
 			}
@@ -226,4 +226,5 @@ void FlaccoController::taskReorder(Task<Eigen::MatrixXf>& stack,const std::vecto
 		initial = 0;
 		final = danger;
 	}
+	stack.setIndices(distT.getInd()); // <- this should recover the standard order if there is no need to swap tasks
 }
