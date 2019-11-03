@@ -176,7 +176,7 @@ Vector3f FlaccoController::eeRepulsiveVelocity(const VectorXf &Pos, const int nu
 	return repulsiveMagnitude(Pos,numberOfObstacle) * eeDisVec(Pos,numberOfObstacle) / eeDis(Pos,numberOfObstacle);
 }
 
-void FlaccoController::taskReorder(Task<Eigen::MatrixXf>& stack,const std::vector<Vector3f>& contPoints) const {
+void FlaccoController::taskReorder(Task<Eigen::MatrixXf>& stack,const std::vector<Vector3f>& contPoints, bool& switched) const {
 	/*DISTANCES IN THE CANONICAL ORDER*/
 	int sizeMax = stack.size(), danger{0};
 	std::vector<float> dist(sizeMax);
@@ -191,30 +191,7 @@ void FlaccoController::taskReorder(Task<Eigen::MatrixXf>& stack,const std::vecto
 	Task<float> distT(dist);
 	distT.setIndices(stackInd);
 
-	/*SWAPPING*/
-	// Will be implemented differently
-	// IDEA IS: swap the already ordered vector, take criticity from the position of index "0" in stackInd (ee actual priority)
-	/*
-	int criticity{0};
-
-	for (int i = 0; i < cycle - 1; ++i) {
-		float di = dist[i];
-		float dj = dist[i+1];
-		if(dj < di) {
-			if(dj <= distance_warning && dj > critic_d && i > criticity){
-				stack.swapTask(i,i+1); dist[i] = dj; dist[i+1] = di;
-				i -= 2;
-			} else if(dj <= distance_critic) {
-				stack.swapTask(i,i+1); dist[i] = dj; dist[i+1] = di; 	//swap task and distances so that in next step
-																	 	// won't be computed again
-
-				if(i>criticity) ++criticity;	// dimension of the critic distance vector increase if a critic
-												// swap is being done from outside the sub-vector
-
-				i == 0 ? i-=1 : i -= 2; //can't accede to dist[-1] in the next step if i == 0
-			}
-		}
-	}*/
+	/*REORDERING*/
 	int initial{danger+1}, final{sizeMax};
 	for (int j = 0; j < 2; ++j) {
 		// first iteration is for the relaxed sub-vector
@@ -237,6 +214,7 @@ void FlaccoController::taskReorder(Task<Eigen::MatrixXf>& stack,const std::vecto
 			if(min < distance_warning) {
 				stack.goUpTo(minK, i);
 				distT.goUpTo(minK, i);
+				switched = true;
 			}
             // update only if it is in the first iteration on j
             // i.e. if we are sorting the non critical vector

@@ -87,6 +87,7 @@ VectorXf q(7);
 
 float t;
 float lastT:
+bool switched{false};
 float T;
 float L;
 float s;
@@ -330,7 +331,7 @@ VREP_DLLEXPORT void* v_repMessage(int message,int* auxiliaryData,void* customDat
             Task stack_Ji{Ji};
             Task stack_bi{bi};
             // Reorder the Jacobian and the Velocity task. I am calling twice the taskReorder function, but same positions so i will have same final ordering
-            if(t - lastT >= 5*T) {
+            if(t - lastT >= 5*T || !switched) {
 				controller->taskReorder(stack_Ji, cps_positions);
 				controller->taskReorder(stack_bi, cps_positions);
 				lastT = t;

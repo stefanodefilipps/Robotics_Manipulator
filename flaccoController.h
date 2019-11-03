@@ -55,7 +55,7 @@ static void newObst(const Vector3f newPos);
     Vector3f eeDisVec(const VectorXf &Pos, const int numberOfObstacle = 0) const;
     float eeDis(const VectorXf &Pos, const int numberOfObstacle = 0) const;
     Vector3f eeRepulsiveVelocity(const VectorXf &Pos, const int numberOfObstacle = 0) const;
-    void taskReorder(Task<Eigen::MatrixXf>& stack,const std::vector<Vector3f>& contPoints) const; /*TODO: std values*/
+    void taskReorder(Task<Eigen::MatrixXf>& stack,const std::vector<Vector3f>& contPoints, bool& switched = false) const;
     
 private:
     static bool isObstacle; // --> to verify wether there is an obstacle or not
