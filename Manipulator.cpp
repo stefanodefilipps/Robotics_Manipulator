@@ -16,9 +16,10 @@ MatrixXf Manipulator::jacobian(const VectorXf& q0,int upToJ, float eps) const {
 	MatrixXf J(3,upToJ);
 	/*COLUMN WISE ASSIGNEMENT OF JACOBIAN'S ELEMENTS*/
 	for (unsigned int i{0}; i < static_cast<int> (q0.head(upToJ).size()); ++i) {
-        VectorXf qEps{q0};
-		qEps[i] = q0[i] + eps;
-		J.col(i) = (dKin(qEps,upToJ) - dKin(q0,upToJ))/eps;
+        VectorXf qEps_plus{q0}, qEps_minus{q0};
+		qEps_plus[i] = q0[i] + eps;
+        qEps_minus[i] = q0[i] - eps;
+        J.col(i) = (dKin(qEps_plus,upToJ) - dKin(qEps_minus,upToJ))/(2*eps);
 	}
 	return J;
 }
