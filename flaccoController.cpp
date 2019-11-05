@@ -215,7 +215,7 @@ void FlaccoController::taskReorder(Task<Eigen::MatrixXf>& stack,const std::vecto
 				stack.goUpTo(minK, i);
 				distT.goUpTo(minK, i);
 				switched = true;
-			}
+			} else switched = false;
             // update only if it is in the first iteration on j
             // i.e. if we are sorting the non critical vector
 			danger += distT[i] < distance_critic && j == 0;
