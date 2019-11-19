@@ -8,15 +8,46 @@
 	\maketitle
 	
 \begin{abstract}
-	In this paper we will face the problem of task priority resolution using a fast computation of the priority matrix (here \textit{Flacco Matrix}) and the resulting joint velocities.
-	In this framework, several degrees of freedom have been saturated assigning task to collision avoidance for finite number of control points.
+	\textbf{
+	In this paper we will face the problem of task priority resolution using a fast computation of the priority matrix (here \textit{Flacco Matrix}) and the resulting joint velocities.}
+
+\textbf{
+	Collision avoidance for several control points has been taken as a high priority task in this case as well as trajectory tracking.}
 \end{abstract}
 %\begin{keywords}
 %	Priority; Task Priority; Collision Avoidance	
 %\end{keywords}
 \section*{Introduction}
+Due to their high dexterity and the absence of non-holonomic constraints, manipulators has been used to perform a wide range of operation, and sometimes even more of them at the same time.
+
+A handy yet practical example is the one considered below: a manipulator moving in a cluttered environment, trying to complete a trajectory tracking task and, at the same time, avoid collision with obstacles nearby.
+
+\subsection*{Approach}
+Due to the high complexity of the task we divided our control scheme into 3 main blocks:
+\begin{enumerate}
+	\item \textbf{Task priority matrix:} to compute in a fast way the resulting joint velocity, executing the task velocities coming from the prioritized stack of tasks.
+	\item \textbf{Priority resolution algorithm:} to organize the stack of tasks depending on the each ones' \textit{generalized cost}.
+	This concept will be further explained above.
+	\item \textbf{Control algorithm:} to generate the reference joint velocity that the manipulator should execute.
+\end{enumerate}
+\section{Task definition and associated cost}
+TODO: brief description
+\subsection{Assigned tasks}
+\begin{enumerate}
+	\item Trajectory tracking + Collision avoidance 0.
+	\item Elbow up (i.e. horizontal).
+	\item collision avoidance 1.
+	\item collision avoidance 2.
+\end{enumerate}
+\subsubsection{Collision avoidance}
+\subsection{Cost definition}
+TTTTHE DISTANCE: TODO.
 \section{Task priority matrix}
+
+\section{Priority resolution algorithm}
+We defined the stack of tasks as: TODO
 \section{Control algorithm}
+We switch every "n" so as: TODO
 \section{Code}
 \section{Results}
 \tableofcontents
