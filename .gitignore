@@ -1,0 +1,9 @@
+#CLION files
+.idea/
+
+#compile results
+*.o
+*.a
+
+Makefile
+MAKEFILE
