@@ -11,3 +11,10 @@ MAKEFILE
 #temporary files
 *~
 ~test/
+
+*.aux
+*.bbl
+*.blg
+*.log
+*.gz
+*.toc
