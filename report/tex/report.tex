@@ -1,4 +1,7 @@
 \documentclass[12pt,a4paper, twocolumn, twoside]{article}
+\usepackage{amsmath}
+
+\newcommand{\diff}[2]{\frac{\partial{#1}}{\partial{#2}}}
 
 \begin{document}
 	
@@ -22,31 +25,77 @@ Due to their high dexterity and the absence of non-holonomic constraints, manipu
 
 A handy yet practical example is the one considered below: a manipulator moving in a cluttered environment, trying to complete a trajectory tracking task and, at the same time, avoid collision with obstacles nearby.
 
-\subsection*{Approach}
+\section{Tasks definition}
+The tasks we used are four and they occupy all 7 manipulator's DOF:
+\begin{itemize}
+	\item one carthesian positioning task occuping 3 DOF.
+	\item one carthesian orientation task for the second link, which occupies 2 DOF.
+	\item two control points' collision avoidance tasks that will occupy complessively 2 DOF.
+\end{itemize}
+\subsection[Task 1]{Carthesian positioning}
+The carthesian positioning task is defined by the direct kinematics of the robot, $f(q)$, so the \textbf{ed-effector}'s position is $r = f(q)$. Hence it's straight-forward the expression of this task's velocity with respect to the joints' one: 
+\begin{equation}
+\label{EQN: task1}
+ \dot{r} = \diff{f(q)}{q} \dot{q} = J\dot{q}
+\end{equation}
+
+\subsubsection{Collision avoidance}
+In the formulation of our problem, where $\dot{r}$ is given (i.e. precomputed), we are left with finding the right value for $\dot{q}$.
+
+As already said, in our approach, we have also to include the collision avoidance for the end-effector. Instead of treating it as a different task, as we will do for the other control points, we could handle it in a "tricky" way so as to not saturate other DOFs: we will use instead of $\dot{r}$, the \textbf{sum} between $\dot{r}$ and another carthesian velocity pushing the end-effector away from the obstacle. This carthesian velocity will be (or TODO: add citation i.e. as in [1])directed as the distance from the center of the obstacle to the tip of the manipulator, and will have a magnitude weighted by a non linear gain $v(P,O)$, where $P = f(q)$ is the end-effector position and $O$ is the obstacle position.
+Hence:
+\begin{equation}\label{repulsive_dir}
+\dot{r_o} = v(P,O)\frac{f(q) - O}{\lVert f(q) - O \rVert}
+\end{equation}
+\begin{equation}\label{repulsive_mag}
+v(P,O) = \frac{V_{max}}{1+e^{(\lVert f(q) -O \rVert(2/\rho)-1)\alpha}}
+\end{equation}
+
+In the end we will have \eqref{EQN: task1} in the form: 
+\[
+\dot{r} + \dot{r_o} = J\dot{q}
+\]
+\subsection[Task 2]{Carthesian orienting}
+TODO: all again and check if the equation is right
+\subsection[Tasks 3 \& 4]{Control points' collision avoidance}
+When dealing with the collision avoidance task linked to the two control points we were left with only 2 DOFs for both so we had to use one for each point. We couldn't use the same approach we used for the end-effector but at the same time something rather similar has to be done. 
+
+To sqash the three DOFs into one, we projected the collision avoidance task velocity, $\mathbf{\dot{r_{o}}_{,i}}$ computed as in \eqref{repulsive_dir} but using the control point position as $P$, onto the direction of the velocity itself. In this way we get a task velocity which is a scalar (1 DOF) equal to the magnitude of the original one (i.e. \eqref{repulsive_mag}).
+
+Defining 
+\begin{itemize}
+	\item $\eta = \frac{P - O}{\lVert P-O \rVert}$
+	\item $P$ as the control point's position
+	\item $O$ as the position of the obstacle
+	\item $J_i$ as the analytical jacobian associated to the $i$-th control point
+\end{itemize}
+we end up with:
+\begin{equation*}
+\eta^T\dot{r_{o}}_{,i} = v(P,O) =\eta^T J_i\dot{q} = J_{c,i}\dot{q}
+\end{equation*}
+Hence:
+\begin{equation}
+v(P,O) = J_{c,i}\dot{q}
+\end{equation}
+
+\section{Control architecture}
 Due to the high complexity of the task we divided our control scheme into 3 main blocks:
 \begin{enumerate}
-	\item \textbf{Task priority matrix:} to compute in a fast way the resulting joint velocity, executing the task velocities coming from the prioritized stack of tasks.
+	\item \textbf{Task priority matrix:} to compute in a fast way the joint velocities executing the task velocities coming from the prioritized stack of tasks.
 	\item \textbf{Priority resolution algorithm:} to organize the stack of tasks depending on the each ones' \textit{generalized cost}.
 	This concept will be further explained above.
 	\item \textbf{Control algorithm:} to generate the reference joint velocity that the manipulator should execute.
+	TODO: fix this
 \end{enumerate}
-\section{Task definition and associated cost}
-TODO: brief description
-\subsection{Assigned tasks}
-\begin{enumerate}
-	\item Trajectory tracking + Collision avoidance 0.
-	\item Elbow up (i.e. horizontal).
-	\item collision avoidance 1.
-	\item collision avoidance 2.
-\end{enumerate}
-\subsubsection{Collision avoidance}
-\subsection{Cost definition}
-TTTTHE DISTANCE: TODO.
-\section{Task priority matrix}
 
-\section{Priority resolution algorithm}
+\subsection{Task priority matrix}
+TODO: stefano
+\subsection{Priority resolution algorithm}
 We defined the stack of tasks as: TODO
-\section{Control algorithm}
+\subsubsection{Cost definition}
+TTTTHE DISTANCE: TODO.
+
+\subsection{Control algorithm}
 We switch every "n" so as: TODO
 \section{Code}
 \section{Results}
