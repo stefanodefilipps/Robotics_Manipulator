@@ -18,3 +18,4 @@ MAKEFILE
 *.log
 *.gz
 *.toc
+report.pdf
