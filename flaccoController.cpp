@@ -176,39 +176,55 @@ Vector3f FlaccoController::eeRepulsiveVelocity(const VectorXf &Pos, const int nu
 	return repulsiveMagnitude(Pos,numberOfObstacle) * eeDisVec(Pos,numberOfObstacle) / eeDis(Pos,numberOfObstacle);
 }
 
-void FlaccoController::taskReorder(Task& stack,const std::vector<Vector3f>& contPoints, float d,float critic_d) const {
-	int cycle = stack.size();
-	/*DISTANCE VECTOR*/
-	std::vector<float> dist(cycle,0);
-	for (int i = 0; i < cycle; ++i) {
-		int stackInd = stack.getInd()[i];
-		if(stackInd == 1) dist[stackInd] = d+1;  /* index 1 means a peculiar task
-												  * for which we add a fictitious distance
-												  */
-		else {
-			float temp_d = eeDis(contPoints[stackInd == 0 ? stackInd : stackInd - 1]); // ctrP has 1 element less than stack
-			dist[stackInd] = temp_d;
-		}
+void FlaccoController::taskReorder(Task<Eigen::MatrixXf>& stack,const std::vector<Vector3f>& contPoints, bool& switched) const {
+	/*DISTANCES IN THE CANONICAL ORDER*/
+	int sizeMax = stack.size(), danger{0};
+	std::vector<float> dist(sizeMax);
+	vector<int> stackInd = stack.getInd();
+	for (int i = 0; i < sizeMax; ++i) {
+		int index = stackInd[i];
+		index != 1 ? dist[index] = eeDis(contPoints[index == 0 ? index : index - 1]) : dist[index] = distance_warning + 1; //sum-up of the previous condition
+		if(index == 0) danger = i;
 	}
-	/*SWAPPING*/
-	int criticity{0};
-	for (int i = 0; i < cycle - 1; ++i) {
-		float di = dist[i];
-		float dj = dist[i+1];
-		if(dj < di) {
-			if(dj <= d && dj > critic_d && i > criticity){
-				stack.swapTask(i,i+1); dist[i] = dj; dist[i+1] = di;
-				i -= 2;
-			} else if(dj <= critic_d) {
-				stack.swapTask(i,i+1); dist[i] = dj; dist[i+1] = di; 	//swap task and distances so that in next step
-																	 	// won't be computed again
 
-				if(i>criticity) ++criticity;	// dimension of the critic distance vector increase if a critic
-												// swap is being done from outside the sub-vector
+	/*TASK'S ASSOCIATED DISTANCES*/
+	Task<float> distT(dist);
+	//distT.setIndices(stackInd);// <- we will use the standard order
 
-				i == 0 ? i-=1 : i -= 2; //can't accede to dist[-1] in the next step if i == 0
+	/*REORDERING*/
+	int initial{danger+1}, final{sizeMax};
+	for (int j = 0; j < 2; ++j) {
+		// first iteration is for the relaxed sub-vector
+		// second one is for the critic sub-vector
+		//
+		// After swapping the first, if there is any critic situation, we will
+		// augment the length of the critic sub-vector and reorder that, knowing that the added components
+		// are actually critic ones.
+		for (int i = initial; i < final; ++i) {
+		    float min{distT[i]};
+		    int minK{i};
+			for (int k = i; k < final; ++k) {
+                // Find the minimum
+			    if(distT[k] < min) {
+			        min = distT[k];
+			        minK = k;
+			    }
 			}
+			// Replace the minimum
+			if(min < distance_warning) {
+				//stack.goUpTo(minK, i);// <- we will only reorder distT and push its indices into stack
+				distT.goUpTo(minK, i);
+				switched = true;
+			} else switched = false;
+            // update only if it is in the first iteration on j
+            // i.e. if we are sorting the non critical vector
+			danger += distT[i] < distance_critic && j == 0;
 		}
+		// reset the values so that we sort from the beginning up to danger
+		// that means we include also the critic tasks coming from the non
+		// critical part
+		initial = 0;
+		final = danger;
 	}
+	stack.setIndices(distT.getInd()); // <- this should recover the standard order if there is no need to swap tasks
 }
-

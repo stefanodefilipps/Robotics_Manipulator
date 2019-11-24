@@ -22,18 +22,20 @@ static std::vector<Vector3f> obstPos;
 
 // TO ADD AN OBSTACLE TO THE STACK
 static void newObst(const Vector3f newPos);
-    /*TODO: add a renge to those parameters or at least a std implementation*/
+    /*TODO: add a range to those parameters or at least a std implementation*/
 	// to the controller constructor we need to pass the terms for computing the repulsive vector magnitude:
 	// aplha_ : to shape the sigmoid curve of the magnitude
 	// rho_: the half length of the control point bounding box
 	// v_max_: The maximum velocity in module that the repulsive vector can get
 	// ks is a vector containing the diagonal element of the proportional parameters of the cartesian control scheme
-	FlaccoController(float alpha_, float rho_, float v_max_, VectorXf ks, vector<Vector3f> obstPos_){
+	FlaccoController(float alpha_, float rho_, float v_max_, VectorXf ks, vector<Vector3f> obstPos_,float _distance = 0.4, float _distance_critic = 0.2){
 		alpha = alpha_;
 		rho = rho_;
 		v_max = v_max_;
 		K = ks.asDiagonal();
 		obstPos = obstPos_;
+		distance_warning = _distance;
+		distance_critic = _distance_critic;
 	}
 
 	/*
@@ -53,7 +55,7 @@ static void newObst(const Vector3f newPos);
     Vector3f eeDisVec(const VectorXf &Pos, const int numberOfObstacle = 0) const;
     float eeDis(const VectorXf &Pos, const int numberOfObstacle = 0) const;
     Vector3f eeRepulsiveVelocity(const VectorXf &Pos, const int numberOfObstacle = 0) const;
-    void taskReorder(Task& stack,const std::vector<Vector3f>& contPoints, float d,float critic_d) const; /*TODO: std values*/
+    void taskReorder(Task<Eigen::MatrixXf>& stack,const std::vector<Vector3f>& contPoints, bool& switched = false) const;
     
 private:
     static bool isObstacle; // --> to verify wether there is an obstacle or not
@@ -70,6 +72,7 @@ private:
 	float alpha;
 	float rho;
 	float v_max;
+	float distance_warning,distance_critic;
 	MatrixXf K;
 };
 

@@ -5,6 +5,7 @@
 *.o
 *.a
 
+#compile file
 Makefile
 MAKEFILE
 
@@ -19,3 +20,7 @@ MAKEFILE
 *.gz
 *.toc
 report.pdf
+CMake*
+
+
+

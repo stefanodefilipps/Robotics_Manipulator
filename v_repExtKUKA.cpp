@@ -76,6 +76,7 @@ simInt obstacle;
 
 ofstream joint_angles;
 ofstream joint_velocities;
+ofstream switching_instants;
 
 MatrixXf DH(7,4);
 float d1 = 0.4;
@@ -86,6 +87,9 @@ float d3 = 0.078;
 VectorXf q(7);
 
 float t;
+float lastT:
+vector<int> switchingTimes;
+bool switched{false};
 float T;
 float L;
 float s;
@@ -303,7 +307,6 @@ VREP_DLLEXPORT void* v_repMessage(int message,int* auxiliaryData,void* customDat
 
 	if (message==sim_message_eventcallback_mainscriptabouttobecalled)
 	{ // The main script is about to be run (only called while a simulation is running (and not paused!))
-
 		if(t <= path->get_end_condition()){
 			// To the controller we need to pass the stack of Jacobian and tasks velocities, The world positions of the control points,
 			// the world obstacles position and the feedforward term for the ee position for the cartesian control scheme
@@ -330,8 +333,12 @@ VREP_DLLEXPORT void* v_repMessage(int message,int* auxiliaryData,void* customDat
             Task stack_Ji{Ji};
             Task stack_bi{bi};
             // Reorder the Jacobian and the Velocity task. I am calling twice the taskReorder function, but same positions so i will have same final ordering
-            controller->taskReorder(stack_Ji,cps_positions,0.4,0.2);
-            controller->taskReorder(stack_bi,cps_positions,0.4,0.2);
+            if(t - lastT >= 5*T || !switched) {
+				controller->taskReorder(stack_Ji, cps_positions,switched);
+				controller->taskReorder(stack_bi, cps_positions);
+				lastT = t;
+				switchingTimes.push_back(round(lastT/T));
+			}
             q_dot = controller->control(stack_Ji.getStack(),stack_bi.getStack());
             for (int i = 0; i < 6; ++i)
             {
@@ -344,6 +351,7 @@ VREP_DLLEXPORT void* v_repMessage(int message,int* auxiliaryData,void* customDat
         	joint_angles << "\n";
         	joint_velocities << q_dot(6);
         	joint_velocities << "\n";
+        	switching_instants << switchingTimes.back() << ";\n";
             q = man->update_configuration(q_dot,T);
             simSetJointPosition(joint_1,q(0));
             simSetJointPosition(joint_2,q(1));
@@ -393,6 +401,7 @@ VREP_DLLEXPORT void* v_repMessage(int message,int* auxiliaryData,void* customDat
         cout << "Insert the path type\n";
         cin >> path_;
         t = 0.0;
+        lastT = t;
 		T = 0.005;
 		q << 0,-M_PI_2,0,-M_PI_2,0,0,0;
 
@@ -413,6 +422,7 @@ VREP_DLLEXPORT void* v_repMessage(int message,int* auxiliaryData,void* customDat
         controller = new FlaccoController(alpha,rho,v_max,ks,obstacles);
         joint_angles.open("joint_angles.txt");
         joint_velocities.open("joint_velocities.txt");
+        switching_instants.open("switching_instants.txt");
         if(path_.compare("linear") == 0){
 
 	        p_in << man->dKin(q)[0],
@@ -578,7 +588,7 @@ VREP_DLLEXPORT void* v_repMessage(int message,int* auxiliaryData,void* customDat
         cout<<"New Simulation just ended\n";
         joint_angles.close();
         joint_velocities.close(); 
-
+        switching_instants.close();
         /*
         torque.close();
         cout<<"Simulation just ended\n";
