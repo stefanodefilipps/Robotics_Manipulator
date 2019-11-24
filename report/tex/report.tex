@@ -1,6 +1,11 @@
 \documentclass[12pt,a4paper, twocolumn, twoside]{article}
 \usepackage{amsmath}
 \usepackage[english]{babel}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{xcolor}
+\usepackage{float}
 
 \newcommand{\diff}[2]{\frac{\partial{#1}}{\partial{#2}}}
 
@@ -126,7 +131,15 @@ This will allows us to prioritize not only using the \emph{cost} but also the po
 
 For example if we perform reordering using only the distance and all the control point are outside the \emph{dangerous} region except for one (e.g. $p_{c2}$), this will take over the priority of the cartesian positioning task even if we would like to still execute the desired trajectory. While if we perform the \emph{critic-dangerous} distinction, and initialize the cartesian positioning task to be always in \texttt{stack$_c$}, $p_{c2}$ will rise in the \texttt{stack}, up to the second position without overtaking the highest priority task.
 \subsection{Control algorithm}
-The control algorithm uses the block-scheme in TODO:figure.
+The control algorithm uses the block-scheme below.
+\begin{figure}[h!]
+\centering
+\includegraphics[width = 2\linewidth]{./plots/ControlSchemeModel.pdf}
+\caption{Block scheme of the control architecture.}
+\end{figure}
+
+Which is a feedback plus feed-forward control architecture, where the feed-forward term is designed to achieve collision avoidance for the end-effector.
+Note that all the information about the other control points and the orientation of the TODO link are included into the \emph{Flacco Matrix}.
 \section{Code}
 
 \section{Results}
