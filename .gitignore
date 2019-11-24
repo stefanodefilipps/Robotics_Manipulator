@@ -20,6 +20,9 @@ MAKEFILE
 *.gz
 *.toc
 *.dvi
+*.nav
+*.snm
+*.out
 report.pdf
 CMake*
 
