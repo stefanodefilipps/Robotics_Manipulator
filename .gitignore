@@ -11,7 +11,7 @@ MAKEFILE
 
 #temporary files
 *~
-~test/
+~test
 
 *.aux
 *.bbl
@@ -19,6 +19,7 @@ MAKEFILE
 *.log
 *.gz
 *.toc
+*.dvi
 report.pdf
 CMake*
 

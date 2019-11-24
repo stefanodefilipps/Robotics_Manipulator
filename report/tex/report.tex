@@ -112,10 +112,23 @@ Note that many other choices could have be possible. Here a few that has been co
 \end{list}
 \subsubsection{Priority assignment}
 
-The assignment of the priority passes trough the reordering of the \texttt{stack}
+The assignment of the priority passes trough the reordering of the \texttt{stack} so as the task with priority $0$ will be the first element.
+In this case we want to reorder the tasks differently based on the position of their associated point in the space.
+
+We divided the \texttt{stack} into 2 sub-vectors whose dimensions, if summed, are \textbf{always} equal to the dimension of \texttt{stack} (i.e. the number of DOFs of the robot) and will be called \texttt{stack$_c$}, for the \emph{critic} part and \texttt{stack$_d$}, for both the \emph{dangerous} and \emph{normal} parts.
+
+\begin{enumerate}
+\item The points outside the \emph{dangerous} region won't be reordered.
+\item the elements of \texttt{stack$_d$} in the \emph{dangerous} region will be reordered accordingly to their distance from $O$, if it's smaller than $D$ they will go into \texttt{stack$_c$}.
+\item the elements of \texttt{stack$_c$} will be reordered accordingly to their distance from $O$.
+\end{enumerate}
+This will allows us to prioritize not only using the \emph{cost} but also the position of a task in the \texttt{stack}.
+
+For example if we perform reordering using only the distance and all the control point are outside the \emph{dangerous} region except for one (e.g. $p_{c2}$), this will take over the priority of the cartesian positioning task even if we would like to still execute the desired trajectory. While if we perform the \emph{critic-dangerous} distinction, and initialize the cartesian positioning task to be always in \texttt{stack$_c$}, $p_{c2}$ will rise in the \texttt{stack}, up to the second position without overtaking the highest priority task.
 \subsection{Control algorithm}
-We switch every "n" so as: TODO 
+The control algorithm uses the block-scheme in TODO:figure.
 \section{Code}
+
 \section{Results}
 
 \bibliography{sample}
