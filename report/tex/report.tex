@@ -94,20 +94,25 @@ TODO: Stefano
 \subsection{Priority resolution algorithm}
 In this framework we will define:
 \begin{enumerate}
-\item[-] $O$ the position of the obstacle in the workspace
-\item[-] $D$ the critical 
+\item[-] $O$ the position of the obstacle in the workspace.
+\item[-] $D$ the distance from the obstacle for which we are more likely to end up in a dangerous situation.
+\item[-] $d$ the distance from the obstacle which is quite dangerous but not yet critical.
+\item[-] \texttt{stack} the array of Jacobians associated to each task.
 \end{enumerate}
 To keep a solution which is consistent with respect to our problem, we need an efficient resolution of the priority assignment and a meaningful cost for each task.
 \subsubsection{Cost}
 Since in this application \textit{almost} each task is associated to the movement of a cartesian point, we used the \textbf{distance} of that point from the obstacle.
-About \textit{task 2}, associated to a cartesian orientation, we simply said it will have a constant cost computed as $d + 1$, so as to be always non-critical.
+About \textit{task 2}, associated to a cartesian orientation, we simply said it will have a constant cost computed as $d + 1$, so as to be always non-critical, this is due to the fact that we are not quite interested in the orientation task as we are in collision avoidance but we will also like that it is executed with a higher priority if we are in a normal operation point.
 
 Note that many other choices could have be possible. Here a few that has been considered at the beginning:
 \begin{list}{\textbf{Case:}}{}
 \item Project the distance from the obstacle onto the instantaneous direction of motion for each control point, keep second task's cost constant.
 \item Same as before but assign a control point to the midpoint of the TODO link to compute second task's cost.
+\item TODO:
 \end{list}
 \subsubsection{Priority assignment}
+
+The assignment of the priority passes trough the reordering of the \texttt{stack}
 \subsection{Control algorithm}
 We switch every "n" so as: TODO 
 \section{Code}
