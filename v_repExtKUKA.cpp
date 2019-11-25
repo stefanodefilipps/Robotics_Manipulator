@@ -378,15 +378,15 @@ VREP_DLLEXPORT void* v_repMessage(int message,int* auxiliaryData,void* customDat
             Task<MatrixXf> stack_Ji{Ji};
             Task<MatrixXf> stack_bi{bi};*/
             // Reorder the Jacobian and the Velocity task. I am calling twice the taskReorder function, but same positions so i will have same final ordering
-            if(t - lastT >= 5*T || !switched) { // The outermost if needs to be deleted so we can still keep info about switching instanties
-				switched = controller->taskReorder(stack_Ji, cps_positions);
-				controller->taskReorder(stack_bi, cps_positions);
-				lastT = t;
-				if(switched){
-					switchingTimes.push_back(round(lastT/T));
-					switching_instants << switchingTimes.back() << ";\n";
-				}
+            //if(t - lastT >= 5*T || !switched) { // The outermost if needs to be deleted so we can still keep info about switching instanties
+			switched = controller->taskReorder(stack_Ji, cps_positions);
+			controller->taskReorder(stack_bi, cps_positions);
+			lastT = t;
+			if(switched){
+				switchingTimes.push_back(round(lastT/T));
+				switching_instants << switchingTimes.back() << ";\n";
 			}
+			//}
             q_dot = controller->control(stack_Ji.getStack(),stack_bi.getStack());
             for (int i = 0; i < 6; ++i)
             {
