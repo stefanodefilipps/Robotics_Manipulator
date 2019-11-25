@@ -176,8 +176,9 @@ Vector3f FlaccoController::eeRepulsiveVelocity(const VectorXf &Pos, const int nu
 	return repulsiveMagnitude(Pos,numberOfObstacle) * eeDisVec(Pos,numberOfObstacle) / eeDis(Pos,numberOfObstacle);
 }
 
-void FlaccoController::taskReorder(Task<Eigen::MatrixXf>& stack,const std::vector<Vector3f>& contPoints, bool& switched) const {
+bool FlaccoController::taskReorder(Task<Eigen::MatrixXf>& stack,const std::vector<Vector3f>& contPoints) const {
 	/*DISTANCES IN THE CANONICAL ORDER*/
+	bool switched = false;
 	int sizeMax = stack.size(), danger{0};
 	std::vector<float> dist(sizeMax);
 	vector<int> stackInd = stack.getInd();
@@ -215,7 +216,7 @@ void FlaccoController::taskReorder(Task<Eigen::MatrixXf>& stack,const std::vecto
 				//stack.goUpTo(minK, i);// <- we will only reorder distT and push its indices into stack
 				distT.goUpTo(minK, i);
 				switched = true;
-			} else switched = false;
+			} //else switched = false; 
             // update only if it is in the first iteration on j
             // i.e. if we are sorting the non critical vector
 			danger += distT[i] < distance_critic && j == 0;
@@ -227,4 +228,5 @@ void FlaccoController::taskReorder(Task<Eigen::MatrixXf>& stack,const std::vecto
 		final = danger;
 	}
 	stack.setIndices(distT.getInd()); // <- this should recover the standard order if there is no need to swap tasks
+	return switched;
 }

@@ -77,6 +77,9 @@ simInt obstacle;
 ofstream joint_angles;
 ofstream joint_velocities;
 ofstream switching_instants;
+ofstream ee_task_error;
+ofstream elbow_task_error;
+ofstream cps_distances;
 
 MatrixXf DH(7,4);
 float d1 = 0.4;
@@ -87,7 +90,7 @@ float d3 = 0.078;
 VectorXf q(7);
 
 float t;
-float lastT:
+float lastT;
 vector<int> switchingTimes;
 bool switched{false};
 float T;
@@ -99,6 +102,7 @@ float phi;
 float rho;
 float v_max;
 float alpha;
+float init_elbow_task;
 
 VectorXf p_in(3);
 VectorXf p_fin(3);
@@ -120,6 +124,8 @@ VectorXf q_dot(7);
 Vector3f obstPos;
 Vector3f p_desired_ee;
 vector<int> cPoints;
+int always_present = 1;
+float minimum_distance_presence = 0.4;
 
 Manipulator* man;
 PathTrajectory* path;
@@ -313,16 +319,55 @@ VREP_DLLEXPORT void* v_repMessage(int message,int* auxiliaryData,void* customDat
 			// For now the only control point is simply the end effector 
 			vector<Vector3f> cps_positions = man->controlPoints();
             J1 = man->jacobian(q);
-            b1 = path->p_dot_d(t) + controller->eeRepulsiveVelocity(man->dKin(q),0);
-            p_desired_ee = p_desired_ee + T * b1;
-            b1 = b1 + K * (p_desired_ee - man->dKin(q));
+            //b1 = path->p_dot_d(t) + controller->eeRepulsiveVelocity(man->dKin(q),0);
+            //p_desired_ee = p_desired_ee + T * b1;
+            //b1 = b1 + K * (p_desired_ee - man->dKin(q));
+            b1 = path->p_dot_d(t) + K * (path->p_d(t) - man->dKin(q));
+            b1 = b1 + controller->eeRepulsiveVelocity(man->dKin(q),0);
             // Remeber that in the stack of Jacobians each Jacobian needs to have 7 column because we have 7 degree of freedom
             // The partial Jacobian computed up to p joint has dimension 3xp but i need to extend it to 3x7 adding to it a 3x(7-p) submatrix
             // of all 0s since the kinematics of p point doesn't depend on the 7-p successive joint.
             // Moreover, since the jacobian of the control points need to be normalized by the direction vector 1x3 i will obtain a final matrix
             // of 1x7 where all the 7-p elements will be surly 0s. Therefore It is the same as doing computation with 3xp matrix and then assing the 
             // resulting submatrix to the correct part of the 1x7 final matrix
-            J3 << 0.0,0.0,0.0,0.0,0.0,0.0,0.0;
+            int number_present = 0;
+            vector<MatrixXf> Ji{J1,J2};
+	        vector<MatrixXf> bi{b1,b2};
+            if(always_present == 1){
+            	J3 << 0.0,0.0,0.0,0.0,0.0,0.0,0.0;
+	            J3.block(0,0,1,cPoints[1]) = controller->projectJ(man->jacobian(q,cPoints[1]),cps_positions[1]);
+	            b3 << controller->projectP(cps_positions[1]);
+	            Ji.push_back(J3);
+	            bi.push_back(b3);
+	            J4 << 0.0,0.0,0.0,0.0,0.0,0.0,0.0;
+	            J4.block(0,0,1,cPoints[2]) = controller->projectJ(man->jacobian(q,cPoints[2]),cps_positions[2]);
+	            b4 << controller->projectP(cps_positions[2]);
+	            Ji.push_back(J4);
+	            bi.push_back(b4);
+            }
+            else{
+            	if(controller->eeDis(cps_positions[1]) <= minimum_distance_presence){
+            		J3 << 0.0,0.0,0.0,0.0,0.0,0.0,0.0;
+		            J3.block(0,0,1,cPoints[1]) = controller->projectJ(man->jacobian(q,cPoints[1]),cps_positions[1]);
+		            b3 << controller->projectP(cps_positions[1]);
+		            Ji.push_back(J3);
+		            bi.push_back(b3);
+		            number_present++;
+            	}
+            	if(controller->eeDis(cps_positions[2]) <= minimum_distance_presence){
+            		J4 << 0.0,0.0,0.0,0.0,0.0,0.0,0.0;
+		            J4.block(0,0,1,cPoints[2]) = controller->projectJ(man->jacobian(q,cPoints[2]),cps_positions[2]);
+		            b4 << controller->projectP(cps_positions[2]);
+		            Ji.push_back(J4);
+		            bi.push_back(b4);
+		            number_present++;
+            	}
+            	cout << "NUMBER PRESENT " << number_present << "\n";
+            }
+            Task<MatrixXf> stack_Ji{Ji};
+            Task<MatrixXf> stack_bi{bi};
+
+            /*J3 << 0.0,0.0,0.0,0.0,0.0,0.0,0.0;
             J3.block(0,0,1,cPoints[1]) = controller->projectJ(man->jacobian(q,cPoints[1]),cps_positions[1]);
             b3 << controller->projectP(cps_positions[1]);
             J4 << 0.0,0.0,0.0,0.0,0.0,0.0,0.0;
@@ -330,14 +375,17 @@ VREP_DLLEXPORT void* v_repMessage(int message,int* auxiliaryData,void* customDat
             b4 << controller->projectP(cps_positions[2]);
             vector<MatrixXf> Ji{J1,J2,J3,J4};
             vector<MatrixXf> bi{b1,b2,b3,b4};
-            Task stack_Ji{Ji};
-            Task stack_bi{bi};
+            Task<MatrixXf> stack_Ji{Ji};
+            Task<MatrixXf> stack_bi{bi};*/
             // Reorder the Jacobian and the Velocity task. I am calling twice the taskReorder function, but same positions so i will have same final ordering
-            if(t - lastT >= 5*T || !switched) {
-				controller->taskReorder(stack_Ji, cps_positions,switched);
+            if(t - lastT >= 5*T || !switched) { // The outermost if needs to be deleted so we can still keep info about switching instanties
+				switched = controller->taskReorder(stack_Ji, cps_positions);
 				controller->taskReorder(stack_bi, cps_positions);
 				lastT = t;
-				switchingTimes.push_back(round(lastT/T));
+				if(switched){
+					switchingTimes.push_back(round(lastT/T));
+					switching_instants << switchingTimes.back() << ";\n";
+				}
 			}
             q_dot = controller->control(stack_Ji.getStack(),stack_bi.getStack());
             for (int i = 0; i < 6; ++i)
@@ -351,7 +399,10 @@ VREP_DLLEXPORT void* v_repMessage(int message,int* auxiliaryData,void* customDat
         	joint_angles << "\n";
         	joint_velocities << q_dot(6);
         	joint_velocities << "\n";
-        	switching_instants << switchingTimes.back() << ";\n";
+        	ee_task_error << sqrt((path->p_d(t) - man->dKin(q)).transpose()*(path->p_d(t) - man->dKin(q))) << "\n";
+        	elbow_task_error << init_elbow_task - (q[1]+q[2]+q[3]+q[4]) << "\n";
+        	cps_distances << controller->eeDis(cps_positions[0]) << ";" << controller->eeDis(cps_positions[1]) << ";" << controller->eeDis(cps_positions[2]) << "\n";
+        	//switching_instants << switchingTimes.back() << ";\n";
             q = man->update_configuration(q_dot,T);
             simSetJointPosition(joint_1,q(0));
             simSetJointPosition(joint_2,q(1));
@@ -400,6 +451,17 @@ VREP_DLLEXPORT void* v_repMessage(int message,int* auxiliaryData,void* customDat
         cin >> v_max;
         cout << "Insert the path type\n";
         cin >> path_;
+        string response;
+        cout << "All control points always present?\n";
+        cin >> response;
+        if(response == "yes"){
+        	always_present = 1;
+        }
+        if(response == "no"){
+        	always_present = 0;
+        	cout << "Insert minimum distance of presence\n";
+        	cin >> minimum_distance_presence;
+        }
         t = 0.0;
         lastT = t;
 		T = 0.005;
@@ -423,6 +485,10 @@ VREP_DLLEXPORT void* v_repMessage(int message,int* auxiliaryData,void* customDat
         joint_angles.open("joint_angles.txt");
         joint_velocities.open("joint_velocities.txt");
         switching_instants.open("switching_instants.txt");
+        ee_task_error.open("ee_task_error.txt");
+        elbow_task_error.open("elbow_task_error.txt");
+        cps_distances.open("cps_distances.txt");
+        init_elbow_task = q[0] + q[1] + q[2] + q[3];
         if(path_.compare("linear") == 0){
 
 	        p_in << man->dKin(q)[0],
@@ -589,6 +655,9 @@ VREP_DLLEXPORT void* v_repMessage(int message,int* auxiliaryData,void* customDat
         joint_angles.close();
         joint_velocities.close(); 
         switching_instants.close();
+        ee_task_error.close();
+        elbow_task_error.close();
+        cps_distances.close();
         /*
         torque.close();
         cout<<"Simulation just ended\n";
