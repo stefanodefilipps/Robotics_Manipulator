@@ -6,6 +6,8 @@
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \usepackage{xcolor}
+\newcommand{\todo}{\textcolor{red}{\textbf{TODO:}}}
+
 \author[Stefano, Marco]{Stefano De Filippis \& Marco Menchetti}
 \title[ROB2 project]{Task priority assignment with collision avoidance}
 %\setbeamercovered{transparent} 
@@ -36,18 +38,44 @@
 \begin{frame}{Collision avoidance. How?}
 \begin{columns}
 \begin{column}{.5\textwidth}
-\begin{block}{Control points}
-
+\begin{block}{1. Control points}
+We push constantly the control point away from the obstacle so as to be sure they will never get in contact!
+\textbf{\textcolor{red}{How do we handle priority?}}
+\begin{itemize}
+\item When the control point is too near the priority lowers (i.e. becomes more important)
+\item As soon as the distance exit the \emph{dangerous} region the priority rise again
+\end{itemize}
 \end{block}
 \end{column}
 \begin{column}{.5\textwidth}
-Figure of the KUKA and its control points
+\todo Figure of the KUKA and its control points
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Collision avoidance. How?}
+\begin{columns}
+\begin{column}{.5\textwidth}
+\begin{block}{2. How do we push?}
+We change approach whether the control point is on the e-e or on the structure:
+\begin{itemize}
+\item For the end-effector we add a cartesian velocity pointing away from the obstacle
+\item For the structure we add a velocity on the rotation plane of the joint \todo fix
+\end{itemize}
+\end{block}
+\end{column}
+\begin{column}{.5\textwidth}
+\todo figure of the repulsive velocity
 \end{column}
 \end{columns}
 \end{frame}
 
 \begin{frame}{Tasks}
-
+We know why to prioritize Tasks, but which are the ones we are going to need?
+\begin{itemize}
+\item A cartesian positioning task (i.e. we want our e-e to behave in a certain way)
+\item \todo
+\end{itemize}
 \end{frame}
 
 \begin{frame}{Tasks: Cartesian positioning}

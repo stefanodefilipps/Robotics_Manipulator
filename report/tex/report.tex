@@ -8,6 +8,7 @@
 \usepackage{float}
 
 \newcommand{\diff}[2]{\frac{\partial{#1}}{\partial{#2}}}
+\newcommand{\todo}{\textcolor{red}{\textbf{TODO:}}}
 
 \begin{document}
 	
@@ -48,7 +49,7 @@ The cartesian positioning task is defined by the direct kinematics of the robot,
 \subsubsection{Collision avoidance}
 In the formulation of our problem, where $\dot{r}$ is given (i.e. precalculated), we are left with finding the right value for $\dot{q}$.
 
-As already said, in our approach, we have also to include the collision avoidance for the end-effector. Instead of treating it as a different task, as we will do for the other control points, we could handle it in a "tricky" way so as to not saturate other DOFs: we will use instead of $\dot{r}$, the \textbf{sum} between $\dot{r}$ and another cartesian velocity pushing the end-effector away from the obstacle. This cartesian velocity will be (or TODO: add citation i.e. as in [1])directed as the distance from the center of the obstacle to the tip of the manipulator, and will have a magnitude weighted by a non linear gain $v(P,O)$, where $P = f(q)$ is the end-effector position and $O$ is the obstacle position.
+As already said, in our approach, we have also to include the collision avoidance for the end-effector. Instead of treating it as a different task, as we will do for the other control points, we could handle it in a "tricky" way so as to not saturate other DOFs: we will use instead of $\dot{r}$, the \textbf{sum} between $\dot{r}$ and another cartesian velocity pushing the end-effector away from the obstacle. This cartesian velocity will be (or \todo add citation i.e. as in [1])directed as the distance from the center of the obstacle to the tip of the manipulator, and will have a magnitude weighted by a non linear gain $v(P,O)$, where $P = f(q)$ is the end-effector position and $O$ is the obstacle position.
 Hence:
 \begin{equation}\label{repulsive_dir}
 \dot{r_o} = v(P,O)\frac{f(q) - O}{\lVert f(q) - O \rVert}
@@ -62,7 +63,7 @@ In the end we will have \eqref{EQN: task1} in the form:
 \dot{r} + \dot{r_o} = J\dot{q}
 \]
 \subsection[Task 2]{Cartesian orientation}
-TODO: all again and check if the equation is right
+\todo all again and check if the equation is right
 \subsection[Tasks 3 \& 4]{Control points' collision avoidance}
 When dealing with the collision avoidance task linked to the two control points we were left with only 2 DOFs for both so we had to use one for each point. We couldn't use the same approach we used for the end-effector but at the same time something rather similar has to be done. 
 
@@ -91,11 +92,11 @@ Due to the high complexity of the task we divided our control scheme into 3 main
 	\item \textbf{Priority resolution algorithm:} to organize the stack of tasks accordingly to each ones' \textit{generalized cost}.
 	This concept will be further explained above.
 	\item \textbf{Control algorithm:} to generate the reference joint velocity that the manipulator should execute.
-	TODO: fix this
+	\todo fix this
 \end{enumerate}
 
 \subsection{Task priority matrix}
-TODO: Stefano
+\todo Stefano
 \subsection{Priority resolution algorithm}
 In this framework we will define:
 \begin{enumerate}
@@ -112,8 +113,8 @@ About \textit{task 2}, associated to a cartesian orientation, we simply said it 
 Note that many other choices could have be possible. Here a few that has been considered at the beginning:
 \begin{list}{\textbf{Case:}}{}
 \item Project the distance from the obstacle onto the instantaneous direction of motion for each control point, keep second task's cost constant.
-\item Same as before but assign a control point to the midpoint of the TODO link to compute second task's cost.
-\item TODO:
+\item Same as before but assign a control point to the midpoint of the \todo link to compute second task's cost.
+\item \todo
 \end{list}
 \subsubsection{Priority assignment}
 
@@ -139,7 +140,7 @@ The control algorithm uses the block-scheme below.
 \end{figure*}
 
 Which is a feedback plus feed-forward control architecture, where the feed-forward term is designed to achieve collision avoidance for the end-effector.
-Note that all the information about the other control points and the orientation of the TODO link are included into the \emph{Flacco Matrix}.
+Note that all the information about the other control points and the orientation of the \todo link are included into the \emph{Flacco Matrix}.
 \section{Code}
 
 \section{Results}
