@@ -7,6 +7,9 @@
 \usepackage{amssymb}
 \usepackage{xcolor}
 \newcommand{\todo}{\textcolor{red}{\textbf{TODO:}}}
+\newcommand{\dof}[1]{\begin{itemize}
+\item[-]\textcolor{blue}{\textbf{#1 DOFs}}
+\end{itemize}}
 
 \author[Stefano, Marco]{Stefano De Filippis \& Marco Menchetti}
 \title[ROB2 project]{Task priority assignment with collision avoidance}
@@ -71,19 +74,36 @@ We change approach whether the control point is on the e-e or on the structure:
 \end{frame}
 
 \begin{frame}{Tasks}
-We know why to prioritize Tasks, but which are the ones we are going to need?
+We know why to prioritize Tasks, but which are the ones we are going to use?
 \begin{itemize}
 \item A cartesian positioning task (i.e. we want our e-e to behave in a certain way)
-\item \todo
+\dof{3}
+\item An orientation task used to simulate any kind of auxiliary task
+\dof{2}
+\item Two collision avoidance task, each one on 1 DOF
+\dof{2}
 \end{itemize}
+In the end we saturated all the 7 DOFs of the manipulator.
 \end{frame}
 
 \begin{frame}{Tasks: Cartesian positioning}
+Cartesian positioning means we want the end effector to execute a given trajectory \{\todo check timing law \} in $\Bbb R^3$.
 
+In our case we admitted 2 different kind of paths:
+\begin{itemize}
+\item A linear path
+\item A circular path 
+\end{itemize}
+
+We could have also used different paths but for the purpose of this project they were enough, and its associated jacobian is the analytical jacobian of the direct kinematics.
 \end{frame}
 
 \begin{frame}{Tasks: Link orientation}
-
+The orientation task tries to keep constant the orientation of the \todo link axis and it can be defined as follows \todo check:
+\begin{equation*}
+\sum_{i = 2}^4 q_i = \frac{\pi}{2}\longrightarrow \sum_{i = 2}^4 q_i - \frac{\pi}{2} = 0
+\end{equation*}
+Hence its associated jacobian is a row made by all zeroes except for the components of $q$ which appear in the task.
 \end{frame}
 
 \begin{frame}{Tasks: Collision avoidance control points}

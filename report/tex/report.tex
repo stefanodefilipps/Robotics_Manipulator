@@ -40,7 +40,7 @@ The tasks we used are four and they occupy all 7 manipulator's DOF:
 	\item two control points' collision avoidance tasks that will occupy overall 2 DOF.
 \end{itemize}
 \subsection[Task 1]{cartesian positioning}
-The cartesian positioning task is defined by the direct kinematics of the robot, $f(q)$, so the \textbf{ed-effector}'s position is $r = f(q)$. Hence it's straight-forward the expression of this task's velocity with respect to the joints' one: 
+The cartesian positioning task is defined by the direct kinematics of the robot, $f(q)$, so the \textbf{end-effector}'s position is $r = f(q)$. Hence it's straight-forward the expression of this task's velocity with respect to the joints' one: 
 \begin{equation}
 \label{EQN: task1}
  \dot{r} = \diff{f(q)}{q} \dot{q} = J\dot{q}
