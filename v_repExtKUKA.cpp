@@ -384,7 +384,7 @@ VREP_DLLEXPORT void* v_repMessage(int message,int* auxiliaryData,void* customDat
 			lastT = t;
 			if(switched){
 				switchingTimes.push_back(round(lastT/T));
-				switching_instants << switchingTimes.back() << ";\n";
+				switching_instants << switchingTimes.back() << "\n";
 			}
 			//}
             q_dot = controller->control(stack_Ji.getStack(),stack_bi.getStack());
