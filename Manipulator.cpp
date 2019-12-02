@@ -10,7 +10,7 @@ Write me @ menchetti.1713013@studenti.uniroma1.it
 
 VectorXf Manipulator::q;
 
-MatrixXf Manipulator::jacobian(const VectorXf& q0,int upToJ, float eps) const {
+MatrixXf Manipulator::jacobian(const VectorXf& q0,int upToJ, float eps) const { //TODO: add zOffset
     upToJ = upToJ == -1 ? nJoints : upToJ;
 	/*JACOBIAN DIMENTION ASSIGNEMENT*/
 	MatrixXf J(3,upToJ);
@@ -52,9 +52,9 @@ Matrix4f Manipulator::HTMat(const float var, const int i) const {
 	return H;
 }
 
-Vector4f Manipulator::dKinAlg(const VectorXf& vars, int upToNJoint, const int i) const {
+Vector4f Manipulator::dKinAlg(const VectorXf& vars, int upToNJoint, const int i, float xOffset) const {
 	upToNJoint = upToNJoint == -1 ? nJoints : upToNJoint;
-	Vector4f v{0,0,0,1};
+	Vector4f v{xOffset,0,0,1};
 	Matrix4f H;
 
 
@@ -81,18 +81,25 @@ VectorXf Manipulator::update_configuration(const VectorXf& q_dot, const float T)
 }
 
 std::vector<Vector3f> Manipulator::controlPoints() const {
-	/*TODO: check for strange joints value*/
-	int nPoints = static_cast<int>(ctrPtsJoint.size());
+	/*TODO: modify for offset*/
+	int nPoints = static_cast<int>(ctrPts.rows());
 	std::vector<Vector3f> tmp(nPoints);
 	for (int i = 0; i < nPoints; ++i) {
-		tmp[i] = dKin(q,ctrPtsJoint[i]);
+		tmp[i] = dKin(q,ctrPts(i,0),0,ctrPts(i,1));
 	}
 	return tmp;
 }
-void Manipulator::setCtrPtsJoints(const std::vector<int> pts) {
-	/*UP TO NOW IT WON'T CHECK DIMENSIONS ON ctrPtsJoints*/
-	int nPoints = static_cast<int>(pts.size());
-	for (int i = 0; i < nPoints; ++i) {
-		ctrPtsJoint.push_back(pts[i]);
-	}
+
+void Manipulator::setCtrPts(const std::vector<int> joints, const std::vector<float> offset) {
+    if(offset.isempty()) {
+        for(int i{0}; i < l ; ++i) {
+            offset.push_back(0);
+        }
+    }
+    VectorXf _j(joints.data());
+    VectorXf _o(offset.data());
+    MatrixXf _ctrPts(l,2);
+    _ctrPts.col(0) = _j;
+    _ctrPts.col(1) = _o;
+    ctrPts = _ctrPts;
 }
