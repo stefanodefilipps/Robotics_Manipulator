@@ -63,7 +63,7 @@ We push constantly the control point away from the obstacle so as to be sure the
 We change approach whether the control point is on the e-e or on the structure:
 \begin{itemize}
 \item For the end-effector we add a cartesian velocity pointing away from the obstacle
-\item For the structure we add a velocity on the rotation plane of the joint \todo fix
+\item For the ones on the structure we add assign a cartesian velocity projected along the distance from the obstacle (\textcolor{red}{1 DOF}).
 \end{itemize}
 \end{block}
 \end{column}
@@ -113,7 +113,7 @@ The associated jacobian $J_1$ is the analytical jacobian of the direct kinematic
 \item We have \textbf{7} tasks and we can't add more. How is it performed?
 \end{itemize}
 \begin{block}{IDEA:}
-Add another velocity to the desired one, pointing away from the obstacle! 
+Add another "safety" velocity to the desired one, pointing away from the obstacle! 
 \end{block}
 \begin{itemize}
 \item In this way the \emph{Flacco Matrix} will handle the \textcolor{red}{exact} joint velocities so as to execute the \textcolor{red}{sum} of the two.
@@ -126,12 +126,51 @@ Add another velocity to the desired one, pointing away from the obstacle!
 \end{columns}
 \end{frame}
 
-\begin{frame}{Task 2: Link orientation}
-The orientation task tries to keep constant the orientation of the \todo link axis and it can be defined as follows \todo check:
+\begin{frame}{Safety velocity}
+\begin{columns}
+\begin{column}{.5\textwidth}
+How do we choose? \todo
+\end{column}
+\begin{column}{.5\textwidth}
+\todo pic
+\end{column}
+\end{columns}
 \end{frame}
 
-\begin{frame}{Tasks 3,4: Collision avoidance control points}
-In order to 
+\begin{frame}{Task 2: Link orientation}
+The orientation task tries to keep constant the elevation and azimuth of the \todo link axis and it can be defined as follows \todo check:
+\end{frame}
+
+\begin{frame}{Tasks 3,4: Control points}
+\begin{columns}
+\begin{column}{.5\textwidth}
+We chose the following:
+\begin{itemize}
+\item \todo
+\item \todo
+\end{itemize}
+\end{column}
+\begin{column}{.5\textwidth}
+\todo pic
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Tasks 3,4: Collision avoidance}
+\begin{columns}
+\begin{column}{.5\textwidth}
+As already introduced we can't perform collision avoidance for the control points using all the three component of the distance vector.
+\begin{block}{PROJECT}
+Using the same safety velocity we can project it on the distance from the obstacle, obtaining a "safety speed" we will call $v$.
+\end{block}
+\end{column}
+\begin{column}{.5\textwidth}
+\begin{equation*}
+v = \eta^T\dot{r_{o}} = \eta^T J_i\dot{q} = J_{c,i}\dot{q}
+\end{equation*}
+$J_i$ is the jacobian at the i-th control point.
+\end{column}
+\end{columns}
 \end{frame}
 
 \begin{frame}{Code}
