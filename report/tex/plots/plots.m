@@ -17,7 +17,7 @@ for i = 1:5
       plot(data(:,j),'LineWidth',2);
       hold on;
    end
-   plot([switching(:),switching(:)],[y_max*1.2,y_min*0.8],'Color',[0 0 0]+0.70,'LineWidth',.5,);
+   plot([switching(:),switching(:)],[y_max*1.2,y_min*0.8],'Color',[0 0 0]+0.70,'LineWidth',.5);
    title(files{i});
    axis([0,row_data,y_min*0.8,y_max*1.2])
 end
