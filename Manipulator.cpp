@@ -10,7 +10,7 @@ Write me @ menchetti.1713013@studenti.uniroma1.it
 
 VectorXf Manipulator::q;
 
-MatrixXf Manipulator::jacobian(const VectorXf& q0,int upToJ, float eps) const { //TODO: add zOffset
+MatrixXf Manipulator::jacobian(const VectorXf& q0,int upToJ,const float offset, float eps) const { //TODO: add zOffset
     upToJ = upToJ == -1 ? nJoints : upToJ;
 	/*JACOBIAN DIMENTION ASSIGNEMENT*/
 	MatrixXf J(3,upToJ);
@@ -19,7 +19,7 @@ MatrixXf Manipulator::jacobian(const VectorXf& q0,int upToJ, float eps) const { 
         VectorXf qEps_plus{q0}, qEps_minus{q0};
 		qEps_plus[i] = q0[i] + eps;
         qEps_minus[i] = q0[i] - eps;
-        J.col(i) = (dKin(qEps_plus,upToJ) - dKin(qEps_minus,upToJ))/(2*eps);
+        J.col(i) = (dKin(qEps_plus,upToJ,0,offset) - dKin(qEps_minus,upToJ,0,offset)/(2*eps);
 	}
 	return J;
 }
@@ -52,9 +52,9 @@ Matrix4f Manipulator::HTMat(const float var, const int i) const {
 	return H;
 }
 
-Vector4f Manipulator::dKinAlg(const VectorXf& vars, int upToNJoint, const int i, float xOffset) const {
+Vector4f Manipulator::dKinAlg(const VectorXf& vars, int upToNJoint, const int i, float zOffset) const {
 	upToNJoint = upToNJoint == -1 ? nJoints : upToNJoint;
-	Vector4f v{xOffset,0,0,1};
+	Vector4f v{0,0,zOffset,1};
 	Matrix4f H;
 
 
@@ -81,7 +81,6 @@ VectorXf Manipulator::update_configuration(const VectorXf& q_dot, const float T)
 }
 
 std::vector<Vector3f> Manipulator::controlPoints() const {
-	/*TODO: modify for offset*/
 	int nPoints = static_cast<int>(ctrPts.rows());
 	std::vector<Vector3f> tmp(nPoints);
 	for (int i = 0; i < nPoints; ++i) {
@@ -90,16 +89,13 @@ std::vector<Vector3f> Manipulator::controlPoints() const {
 	return tmp;
 }
 
-void Manipulator::setCtrPts(const std::vector<int> joints, const std::vector<float> offset) {
+void Manipulator::setCtrPts(const VectorXf& joints, const VectorXf& offset) {
+    ctrPts.resize(3,2); // TODO:check if needed
     if(offset.isempty()) {
-        for(int i{0}; i < l ; ++i) {
+        for(int i{0}; i < 3 ; ++i) {
             offset.push_back(0);
         }
     }
-    VectorXf _j(joints.data());
-    VectorXf _o(offset.data());
-    MatrixXf _ctrPts(l,2);
-    _ctrPts.col(0) = _j;
-    _ctrPts.col(1) = _o;
-    ctrPts = _ctrPts;
+    ctrPts.col(0) = joints.data();
+    ctrPts.col(1) = offset.data();
 }
