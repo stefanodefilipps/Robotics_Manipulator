@@ -96,6 +96,6 @@ void Manipulator::setCtrPts(const VectorXf& joints, const VectorXf& offset) {
             offset.push_back(0);
         }
     }
-    ctrPts.col(0) = joints.data();
-    ctrPts.col(1) = offset.data();
+    ctrPts.col(0) = joints;
+    ctrPts.col(1) = offset;
 }
