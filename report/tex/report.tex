@@ -70,7 +70,7 @@ About cartesian orientation, we want to keep the third link axis vertical, hence
 \[
 p_l = p_5(q) - p_4(q) \rightarrow p_l(q)
 \]
-We are interested in keeping the elevation of this one vertical, which in spherical coordinates coincides with $\phi(q) = 0$, where:
+We are interested in keeping the elevation of this one vertical, which in spherical coordinates coincides with saying $\phi(q) = 0$, where:
 \begin{gather*}
 \phi(q) = \texttt{arccos}(p(q))\\
 p(q) = \frac{p_{l,z}(q)}{\norm{p_l(q)}}
@@ -181,8 +181,7 @@ b_1 \\ b_2
 \end{pmatrix}
 \]
 which is equivalent to $x = a_1^\#b_1$ and therefore I can see only the contribution of the first task in the solution while the second task’s is lost.
-On the other hand, if we compute the solution without priority we obtain:
-\todo check dimension of this one:
+On the other hand, if we compute the solution without priority we obtain.
 \[
 \overline{x} = 
 \begin{bmatrix}
@@ -283,7 +282,7 @@ About \textit{task 2}, associated to a cartesian orientation, we simply said it 
 Note that many other choices could have be possible. Here a few that has been considered at the beginning:
 \begin{list}{\textbf{Case:}}{}
 \item Project the distance from the obstacle onto the instantaneous direction of motion for each control point, keep second task's cost constant.
-\item Same as before but assign a control point to the midpoint of the \todo link to compute second task's cost.
+\item Same as before but assign a control point to the midpoint of the third link to compute second task's cost.
 \item Add and remove from the stack the task associated with control points.
 \end{list}
 \subsubsection{Priority assignment}
