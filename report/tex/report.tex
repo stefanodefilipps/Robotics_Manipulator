@@ -1,4 +1,4 @@
-\documentclass[12pt,a4paper, twocolumn, twoside]{article}
+\documentclass[11pt,a4paper, twocolumn, twoside]{article}
 \usepackage{amsmath}
 \usepackage[english]{babel}
 \usepackage{graphicx}
@@ -11,6 +11,7 @@
 \newcommand{\diff}[2]{\frac{\partial{#1}}{\partial{#2}}}
 \newcommand{\todo}{\textcolor{red}{\textbf{TODO:}}}
 \newcommand{\R}{\mathbb{R}}
+\newcommand{\norm}[1]{\parallel{#1}\parallel}
 
 \begin{document}
 	
@@ -38,7 +39,7 @@ A handy yet practical example is the one considered below: a manipulator moving 
 The tasks we used are four and they occupy 6 out of 7 manipulator's DOF:
 \begin{itemize}
 	\item one cartesian positioning task occupying 3 DOF.
-	\item one cartesian orientation task for the second link, which occupies 1 DOF.
+	\item one cartesian orientation task for the third link axis, which occupies 1 DOF.
 	\item two control points' collision avoidance tasks that will occupy overall 2 DOF.
 \end{itemize}
 \subsection[Task 1]{cartesian positioning}
@@ -65,7 +66,39 @@ In the end we will have \eqref{EQN: task1} in the form:
 \dot{r} + \dot{r_o} = J\dot{q}
 \]
 \subsection[Task 2]{Cartesian orientation}
-\todo all again and check if the equation is right
+About cartesian orientation, we want to keep the third link axis vertical, hence we need to attach a vector $p_l$ to this axis:
+\[
+p_l = p_5(q) - p_4(q) \rightarrow p_l(q)
+\]
+We are interested in keeping the elevation of this one vertical, which in spherical coordinates coincides with $\phi(q) = 0$, where:
+\begin{gather*}
+\phi(q) = \texttt{arccos}(p(q))\\
+p(q) = \frac{p_{l,z}(q)}{\norm{p_l(q)}}
+\end{gather*}
+Whose associated jacobian is :
+\begin{equation}
+\dot{\phi} = \diff{\phi}{p}\diff{p}{q}\dot{q}
+\end{equation}
+Where
+\begin{gather}
+\diff{\phi}{p} = \frac{-1}{\sqrt{1-p^2}}\\
+\diff{p}{q} = \frac{
+\begin{bmatrix}
+0&0&1
+\end{bmatrix}
+\begin{bmatrix}
+J_5-J_4
+\end{bmatrix}}{\norm{p_l(q)}} +\nonumber\\- 
+\frac{p_{l,z}(q)}{\norm{p_l(q)}^2}\diff{(\norm{p_l(q)})}{q}
+\end{gather}
+And
+\[
+\diff{(\norm{p_l(q)})}{q}= \frac{-p_l(q)^T
+\begin{bmatrix}
+J_5-J_4
+\end{bmatrix}}{\norm{p_l(q)}^{3/2}}
+\]
+
 \subsection[Tasks 3 \& 4]{Control points' collision avoidance}
 When dealing with the collision avoidance task linked to the two control points we were left with only 2 DOFs for both so we had to use one for each point. We couldn't use the same approach we used for the end-effector but at the same time something rather similar has to be done. 
 
