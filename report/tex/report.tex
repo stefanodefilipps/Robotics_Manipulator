@@ -7,6 +7,8 @@
 \usepackage{xcolor}
 \usepackage{float}
 \usepackage{amssymb}
+\usepackage{listings}
+\lstset{breaklines=true,basicstyle=\tiny}
 
 \newcommand{\diff}[2]{\frac{\partial{#1}}{\partial{#2}}}
 \newcommand{\todo}{\textcolor{red}{\textbf{TODO:}}}
@@ -311,8 +313,23 @@ Which is a feedback plus feed-forward control architecture, where the feed-forwa
 
 Note that all the information about the other control points and tasks are included into the \emph{Flacco Matrix} and into the task velocities' vector.
 Those quantities have not been included since they are "known" at the control architecture's level and require no external reference.
-\section{Code}
 
+\section{Code}
+\begin{itemize}
+\item Flacco? (flaccoController.cpp)
+\item Reordering? (flaccoController.cpp)
+\item Control points? (Manipulator.cpp)
+\item Control algorithm? (vrepExtKUKA.cpp)
+\end{itemize}
+\begin{lstlisting}{language=C++}
+class BOH {
+public:
+	int none;
+private:
+	int againNone;
+};
+\end{lstlisting}
+\lstinputlisting[language = C++, firstline=13, lastline=25]{../../Manipulator.cpp}
 \section{Results}
 
 \bibliography{sample}
