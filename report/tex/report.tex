@@ -81,25 +81,26 @@ Whose associated jacobian is :
 \begin{equation}
 \dot{\phi} = \diff{\phi}{p}\diff{p}{q}\dot{q}
 \end{equation}
-Where
-\begin{gather}
-\diff{\phi}{p} = \frac{-1}{\sqrt{1-p^2}}\\
-\diff{p}{q} = \frac{
-\begin{bmatrix}
-0&0&1
+And, computing each block independently we get that:
+\begin{align}
+\diff{\phi}{p} &= \frac{-1}{\sqrt{1-p^2}}\\
+\diff{p}{q} &= \frac{p_{l,z}(q)^{'}\norm{p_l(q)} - p_{l,z}(q)\norm{p_l(q)}^{'}}{\norm{p_l(q)}^2} \nonumber \\
+&= (\frac{\hat{z}^T\norm{p_l(q)}^2 - p_{l,z}(q)p_l(q)^T}{\norm{p_l(q)}^3})\begin{bmatrix}
+J_5 - J_4
 \end{bmatrix}
-\begin{bmatrix}
+\end{align}
+Where we know that $p_{l,z}(q)^{'}$ and $\norm{p_{l}(q)}^{'}$ are defined as below, using $\hat{z}^T = \begin{bmatrix}
+0&0&1
+\end{bmatrix}$.
+\begin{align*}
+p_{l,z}(q)^{'}&= \diff{p_{l,z}(q)}{q} = \hat{z}^T\begin{bmatrix}
+J_5 - J_4
+\end{bmatrix} \\
+\norm{p_l(q)}^{'}&=\diff{(\norm{p_l(q)})}{q}= \frac{p_{l,z}(q)p_l(q)^T}{\norm{p_l(q)}}\begin{bmatrix}
 J_5-J_4
-\end{bmatrix}}{\norm{p_l(q)}} +\nonumber\\- 
-\frac{p_{l,z}(q)}{\norm{p_l(q)}^2}\diff{(\norm{p_l(q)})}{q}
-\end{gather}
-And
-\[
-\diff{(\norm{p_l(q)})}{q}= \frac{-p_l(q)^T
-\begin{bmatrix}
-J_5-J_4
-\end{bmatrix}}{\norm{p_l(q)}^{3/2}}
-\]
+\end{bmatrix}
+\end{align*}
+
 
 \subsection[Tasks 3 \& 4]{Control points' collision avoidance}
 When dealing with the collision avoidance task linked to the two control points we were left with only 2 DOFs for both so we had to use one for each point. We couldn't use the same approach we used for the end-effector but at the same time something rather similar has to be done. 
