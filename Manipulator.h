@@ -29,7 +29,7 @@ Manipulator(const MatrixXf& dh, const VectorXf& q_in, const float z_offset = 0):
  * |                                                    |
  * v                                                    v
  */
-Vector3f dKin(const VectorXf& vars = q,const int upToNJoint = -1,const int i = 0) const {
+Vector3f dKin(const VectorXf& vars = q,const int upToNJoint = -1,const int i = 0, const float zOffset = 0) const {
 
 	MatrixXf S(3,4);
 	S << 1, 0, 0, 0,
@@ -47,15 +47,15 @@ VectorXf get_state() const {
 	return q;
 }
 
-MatrixXf jacobian(const VectorXf& q0 = q,  int upToJ = -1, float eps = 0.00001) const; /*DONE & WORKS*/
+MatrixXf jacobian(const VectorXf& q0 = q,  int upToJ = -1, const float offset = 0, float eps = 0.00001) const; /*DONE & WORKS*/
 
 VectorXf update_configuration(const VectorXf& q_dot, const float T);
 
 std::vector<Vector3f> controlPoints() const;
-void setCtrPtsJoints(const std::vector<int> pts);
+void setCtrPts(const VectorXf& joints, const VectorXf& offset);
 private:
 // DIRECT KINEMATICS
-Vector4f dKinAlg(const VectorXf& vars, int upToNJoint,const int i) const; /*DONE & WORKS*/
+Vector4f dKinAlg(const VectorXf& vars, int upToNJoint,const int i,const float zOffset) const; /*DONE & WORKS*/
 Matrix4f HTMat(const float var, const int i) const;
 Matrix3f RMat(const float var, const int i) const;
 
@@ -77,7 +77,8 @@ const int nJoints{0};
 MatrixXf DH;
 static VectorXf q;
 float world_z_offset;
-std::vector<int> ctrPtsJoint;
+std::vector<int> ctrPtsJoint; // TODO: add an offset from the joints here is below
+MatrixXf ctrPts;
 
 // TODO: DYNAMICS ONES
 };

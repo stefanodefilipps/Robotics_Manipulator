@@ -10,7 +10,7 @@ Write me @ menchetti.1713013@studenti.uniroma1.it
 
 VectorXf Manipulator::q;
 
-MatrixXf Manipulator::jacobian(const VectorXf& q0,int upToJ, float eps) const {
+MatrixXf Manipulator::jacobian(const VectorXf& q0,int upToJ,const float offset, float eps) const { //TODO: add zOffset
     upToJ = upToJ == -1 ? nJoints : upToJ;
 	/*JACOBIAN DIMENTION ASSIGNEMENT*/
 	MatrixXf J(3,upToJ);
@@ -19,7 +19,7 @@ MatrixXf Manipulator::jacobian(const VectorXf& q0,int upToJ, float eps) const {
         VectorXf qEps_plus{q0}, qEps_minus{q0};
 		qEps_plus[i] = q0[i] + eps;
         qEps_minus[i] = q0[i] - eps;
-        J.col(i) = (dKin(qEps_plus,upToJ) - dKin(qEps_minus,upToJ))/(2*eps);
+        J.col(i) = (dKin(qEps_plus,upToJ,0,offset) - dKin(qEps_minus,upToJ,0,offset)/(2*eps);
 	}
 	return J;
 }
@@ -52,9 +52,9 @@ Matrix4f Manipulator::HTMat(const float var, const int i) const {
 	return H;
 }
 
-Vector4f Manipulator::dKinAlg(const VectorXf& vars, int upToNJoint, const int i) const {
+Vector4f Manipulator::dKinAlg(const VectorXf& vars, int upToNJoint, const int i, float zOffset) const {
 	upToNJoint = upToNJoint == -1 ? nJoints : upToNJoint;
-	Vector4f v{0,0,0,1};
+	Vector4f v{0,0,zOffset,1};
 	Matrix4f H;
 
 
@@ -81,18 +81,21 @@ VectorXf Manipulator::update_configuration(const VectorXf& q_dot, const float T)
 }
 
 std::vector<Vector3f> Manipulator::controlPoints() const {
-	/*TODO: check for strange joints value*/
-	int nPoints = static_cast<int>(ctrPtsJoint.size());
+	int nPoints = static_cast<int>(ctrPts.rows());
 	std::vector<Vector3f> tmp(nPoints);
 	for (int i = 0; i < nPoints; ++i) {
-		tmp[i] = dKin(q,ctrPtsJoint[i]);
+		tmp[i] = dKin(q,ctrPts(i,0),0,ctrPts(i,1));
 	}
 	return tmp;
 }
-void Manipulator::setCtrPtsJoints(const std::vector<int> pts) {
-	/*UP TO NOW IT WON'T CHECK DIMENSIONS ON ctrPtsJoints*/
-	int nPoints = static_cast<int>(pts.size());
-	for (int i = 0; i < nPoints; ++i) {
-		ctrPtsJoint.push_back(pts[i]);
-	}
+
+void Manipulator::setCtrPts(const VectorXf& joints, const VectorXf& offset) {
+    ctrPts.resize(3,2); // TODO:check if needed
+    if(offset.isempty()) {
+        for(int i{0}; i < 3 ; ++i) {
+            offset.push_back(0);
+        }
+    }
+    ctrPts.col(0) = joints;
+    ctrPts.col(1) = offset;
 }
