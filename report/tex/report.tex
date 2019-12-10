@@ -1,19 +1,28 @@
-\documentclass[11pt,a4paper, twocolumn, twoside]{article}
+\documentclass[12pt, a4paper]{article}
 \usepackage{amsmath}
 \usepackage[english]{babel}
 \usepackage{graphicx}
 \usepackage{caption}
-\usepackage{subcaption}
 \usepackage{xcolor}
 \usepackage{float}
 \usepackage{amssymb}
-\usepackage{listings}
-\lstset{breaklines=true,basicstyle=\tiny}
+\usepackage{subfig}
 
 \newcommand{\diff}[2]{\frac{\partial{#1}}{\partial{#2}}}
 \newcommand{\todo}{\textcolor{red}{\textbf{TODO:}}}
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\norm}[1]{\parallel{#1}\parallel}
+\newcommand{\img}[4]{\includegraphics[scale={#4}]{./plots/#1/#2/#3}}
+
+\newcommand{\tablePlot}[3][.3]{\begin{figure}[H]
+\subfloat[obstacle: \textbf{far}, control points always active]{\img{far}{always}{#2}{#1}}\hfill
+\subfloat[obstacle: \textbf{near}, control points always active]{\img{near}{always}{#2}{#1}}\hfill
+\subfloat[obstacle: \textbf{on path}, control points always active]{\img{on}{always}{#2}{#1}}\\
+\subfloat[obstacle: \textbf{far}, control points \emph{not} always active]{\img{far}{notAlways}{#2}{#1}}\hfill
+\subfloat[obstacle: \textbf{near}, control points \emph{not} always active]{\img{near}{notAlways}{#2}{#1}}\hfill
+\subfloat[obstacle: \textbf{on path}, control points \emph{not} always active]{\img{on}{notAlways}{#2}{#1}}
+\caption{#3}
+\end{figure}}
 
 \begin{document}
 	
@@ -123,6 +132,18 @@ Hence:
 v(P,O) = J_{c,i}\dot{q}
 \end{equation}
 
+\subsubsection{Points' positioning}
+
+For this particular manipulator we chose 3 control points:
+\begin{enumerate}
+\item The first is on the tip of the end-effector.
+\item The second is on the origin of the DH frame associated to the 4$^{th}$ joint (i.e. on the "elbow").
+\item The third is on the second link axis at a \todo distance from the origin of the DH reference frame associated to the 2$^{nd}$ joint (i.e. a bit off the shoulder). In that reference frame, its position is:
+\[c_{pt,3} = \begin{bmatrix}
+0\\0\\z
+\end{bmatrix}
+\]
+\end{enumerate}
 \section{Control architecture}
 Due to the high complexity of the task we divided our control scheme into 3 main blocks:
 \begin{enumerate}
@@ -305,35 +326,69 @@ This will allows us to prioritize not only using the \emph{cost} but also the po
 For example if we perform reordering using only the distance and all the control point are outside the \emph{dangerous} region except for one (e.g. $p_{c2}$), this will take over the priority of the cartesian positioning task even if we would like to still execute the desired trajectory. While if we perform the \emph{critic-dangerous} distinction, and initialize the cartesian positioning task to be always in \texttt{stack$_c$}, $p_{c2}$ will rise in the \texttt{stack}, up to the second position without overtaking the highest priority task.
 \subsection{Control algorithm}
 The control algorithm uses the block-scheme below.
-\begin{figure*}[t]
+\begin{figure}[t]
 \centering
-\includegraphics[width = \linewidth]{./plots/ControlSchemeModel.pdf}
+\includegraphics[width = 1.2\linewidth]{./plots/ControlSchemeModel.pdf}
 \caption{Block scheme of the control architecture.}
-\end{figure*}
+\end{figure}
 Which is a feedback plus feed-forward control architecture, where the feed-forward term is designed to achieve collision avoidance for the end-effector.
 
 Note that all the information about the other control points and tasks are included into the \emph{Flacco Matrix} and into the task velocities' vector.
 Those quantities have not been included since they are "known" at the control architecture's level and require no external reference.
 
-\section{Code}
-\begin{itemize}
-\item Flacco? (flaccoController.cpp)
-\item Reordering? (flaccoController.cpp)
-\item Control points? (Manipulator.cpp)
-\item Control algorithm? (vrepExtKUKA.cpp)
-\end{itemize}
-\begin{lstlisting}{language=C++}
-class BOH {
-public:
-	int none;
-private:
-	int againNone;
-};
-\end{lstlisting}
-\lstinputlisting[language = C++, firstline=13, lastline=25]{../../Manipulator.cpp}
 \section{Results}
+We organized the experiment accordingly with the distance of the end-effector from the obstacle and with its obstruction on the path. We simulated 3 different situations with 2 different control algorithms for a total of 6 different simulations.
 
-\bibliography{sample}
-\bibliographystyle{ieeetr}
+In particular we used for the control algorithms:
+\begin{enumerate}
+\item The task associated with the control points are always present in the \texttt{stack}.
+\item The task associated with the control points are kept away from the \texttt{stack} but their cost is evaluated at each iteration. Whenever they reach a certain threshold (here the control point get into the \emph{dangerous} region), they're added into the stack.
+\end{enumerate}
+
+While the simulations were divided into:
+\begin{enumerate}
+\item \textbf{Far:} The obstacle is located away and it does not interfere with the standard execution of the tasks.
+\item \textbf{Near:} The obstacle is located near the path so as the end effector might get into the \emph{dangerous} region. However the most critical aspect comes from the fact that the last control point is inside the \emph{dangerous} region from the beginning.	
+\item \textbf{On path:} The obstacle is located directly on the path, thus the there is no feasible motion for the end effector that realizes exactly the task. 
+\end{enumerate}
+
+\tablePlot[.33]{joint_angles}{Joint angles for the above cases:}
+\subsection{Far obstacle.}
+Although this might seem an useless case, it helps us to enlighten some fundamental differences between the two algorithm and unique characteristics of the prioritized solution. 
+
+As figure 3 clearly shows, the standard execution of the task 1 \& 2 is way smoother when we include the task avoidance if strictly needed, and although the profile are the almost same the second solution provides joint velocities which have way lower magnitude. Take as an example joint 5 in figure 3d \& 3a.
+
+Another interesting aspect is enlightened by figure 5 \& 6, where we can see that for both control algorithm, if possible, the error on the execution of all task is kept at the level of the least important task. This and the flexibility it offers are the reason why prioritizing tasks during the execution of motion is so important. 
+
+\tablePlot[.33]{joint_velocities}{Joint velocities for the above cases:}
+\subsection{Obstacle close to path.}
+As already said, this particular choice of the obstacle position was meant to create a conflict in the control algorithm, on one side the end effector feels relatively safe with respect to the obstacle since its distance from it is quit large at the beginning, on the other hand the third control point stands right in the \emph{dangerous} region, hence the repulsive velocity it's subject to is quite strong even if it can't receive a higher priority, not being in the \emph{critical} region.
+
+During the execution of motion however, in the final instants, also the ee gets inside that region, and it can be seen here the effect of the reordering algorithm:
+\begin{itemize}
+\item always keeping the control points in the \texttt{stack} biases the whole body to move away from the obstacle and we don't see any switching in the execution of this motion.
+\item keeping the control points away while they're not needed, let them approach the obstacle and, as a matter of fact, we are required to switch the tasks since at least one of the control points get in the \emph{critical} region.
+\end{itemize}
+
+An interesting fact comes from the values the joint velocities assume for the first algorithm shows, for joints 5 \& 6, a mean which is almost zero, resulting in several inversion of motion through the whole simulation.
+
+\tablePlot[.33]{control_points_distances}{Control points' distances for the above cases:}
+\subsection{Obstacle on path.}
+
+In this case the obstacle is placed directly on the path, and we can see that the error associated with the cartesian positioning task is order of magnitude higher than all the previous case. A good test and proof for our control scheme is the fact that however big was this error we completed recovered it, and as soon as it has been possible we converged back to the path.
+
+An interesting fact is that in this case, our problem might seem more difficult to solve while is indeed easier to handle. We can see that the control points almost never interact with the obstacle, hence the main discontinuities come from the tasks 1 and 2. The only time the control points start being problematic, is with the first algorithm when the second point gets too near to the obstacle and this result in a spike in joint velocities which gets smoothed quite fast.
+
+\tablePlot[.33]{ee_task_error}{ee task error for the above cases:}
+\section{Conclusion}
+
+Those simulations provide quite interesting results which not always are overall decisive. 
+
+From an operative point of view it is clear why the prioritization of task is mandatory and how powerful it is the resulting flexibility in the control strategy. On the other hand some doubts arise on how effective it is to exploit the redundancies of a robot from the very beginning of a control action. 
+For sure we can say that prioritization of tasks and null-space exploitation are two incredibly powerful tools which have to be handled carefully.
+\tablePlot{elbow_task_error}{Elbow task error for the above cases:}
+
+%\bibliography{sample}
+%\bibliographystyle{ieeetr}
 \tableofcontents
 \end{document}
