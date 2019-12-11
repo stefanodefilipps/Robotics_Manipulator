@@ -23,7 +23,6 @@ MAKEFILE
 *.nav
 *.snm
 *.out
-report.pdf
 CMake*
 
 
