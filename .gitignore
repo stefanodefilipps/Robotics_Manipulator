@@ -5,5 +5,25 @@
 *.o
 *.a
 
+#compile file
 Makefile
 MAKEFILE
+
+#temporary files
+*~
+~test
+
+*.aux
+*.bbl
+*.blg
+*.log
+*.gz
+*.toc
+*.dvi
+*.nav
+*.snm
+*.out
+CMake*
+
+
+
