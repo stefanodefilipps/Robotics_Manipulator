@@ -138,9 +138,11 @@ For this particular manipulator we chose 3 control points:
 \begin{enumerate}
 \item The first is on the tip of the end-effector.
 \item The second is on the origin of the DH frame associated to the 4$^{th}$ joint (i.e. on the "elbow").
-\item The third is on the second link axis at a \todo distance from the origin of the DH reference frame associated to the 2$^{nd}$ joint (i.e. a bit off the shoulder). In that reference frame, its position is:
+\item The third is on the second link axis at a given distance from the origin of the DH reference frame associated to the 2$^{nd}$ joint (i.e. half link axis' length off the shoulder). In that reference frame, its position is:
 \[c_{pt,3} = \begin{bmatrix}
-0\\0\\z
+0\\0\\ \frac{d_1}{2}
+\end{bmatrix} = \begin{bmatrix}
+0\\0\\ 0.2
 \end{bmatrix}
 \]
 \end{enumerate}
@@ -362,7 +364,7 @@ Another interesting aspect is enlightened by figure 5 \& 6, where we can see tha
 
 \tablePlot[.33]{joint_velocities}{Joint velocities for the above cases:}
 \subsection{Obstacle close to path.}
-As already said, this particular choice of the obstacle position was meant to create a conflict in the control algorithm, on one side the end effector feels relatively safe with respect to the obstacle since its distance from it is quit large at the beginning, on the other hand the third control point stands right in the \emph{dangerous} region, hence the repulsive velocity it's subject to is quite strong even if it can't receive a higher priority, not being in the \emph{critical} region.
+As already said, this particular choice of the obstacle position was meant to create a conflict in the control algorithm, on one side the end effector feels relatively safe with respect to the obstacle since its distance from it is quit large at the beginning, on the other hand the second control point stands right in the \emph{dangerous} region, hence the repulsive velocity it's subject to is quite strong even if it can't receive a higher priority, not being in the \emph{critical} region.
 
 During the execution of motion however, in the final instants, also the ee gets inside that region, and it can be seen here the effect of the reordering algorithm:
 \begin{itemize}
@@ -382,7 +384,7 @@ An interesting fact is that in this case, our problem might seem more difficult 
 \tablePlot[.33]{ee_task_error}{ee task error for the above cases:}
 \section{Conclusion}
 
-Those simulations provide quite interesting results which not always are overall decisive. 
+Those simulations provide quite interesting results which not always are overall decisive. A little note has to be made, using the first control algorithm, whenever a control point is outside the \emph{dangerous} region we are giving \emph{zero} velocity as a reference, thus the generally worst result. The whole body acts as if it is stiffer than it actually is, trying to keep fix the control points.
 
 From an operative point of view it is clear why the prioritization of task is mandatory and how powerful it is the resulting flexibility in the control strategy. On the other hand some doubts arise on how effective it is to exploit the redundancies of a robot from the very beginning of a control action. 
 For sure we can say that prioritization of tasks and null-space exploitation are two incredibly powerful tools which have to be handled carefully.
