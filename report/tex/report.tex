@@ -26,14 +26,17 @@
 
 \begin{document}
 	
-	\title{Task priority assignment with collision avoidance.}
+	\title{Task Priority Matrix method with collision avoidance}
 	\author{Stefano De Filippis \& Marco Menchetti}
 	\date{October 2019}
 	\maketitle
 	
+	\newpage
+	\tableofcontents
+	
 \begin{abstract}
 	\textbf{
-	In this paper we will face the problem of task priority resolution using a fast computation of the priority matrix (here \textit{Flacco Matrix}) and the resulting joint velocities.}
+	In this project we will face the problem of task priority resolution using a fast computation of the priority matrix (here \textit{Flacco Matrix}) and the resulting joint velocities.}
 
 \textbf{
 	Collision avoidance for several control points has been taken as a high priority task in this case as well as trajectory tracking.}
@@ -50,10 +53,10 @@ A handy yet practical example is the one considered below: a manipulator moving 
 The tasks we used are four and they occupy 6 out of 7 manipulator's DOF:
 \begin{itemize}
 	\item one cartesian positioning task occupying 3 DOF.
-	\item one cartesian orientation task for the third link axis, which occupies 1 DOF.
+	\item one link orientation task for the third link axis, which occupies 1 DOF.
 	\item two control points' collision avoidance tasks that will occupy overall 2 DOF.
 \end{itemize}
-\subsection[Task 1]{cartesian positioning}
+\subsection[Task 1]{Cartesian positioning}
 The cartesian positioning task is defined by the direct kinematics of the robot, $f(q)$, so the \textbf{end-effector}'s position is $r = f(q)$. Hence it's straight-forward the expression of this task's velocity with respect to the joints' one: 
 \begin{equation}
 \label{EQN: task1}
@@ -76,7 +79,7 @@ In the end we will have \eqref{EQN: task1} in the form:
 \[
 \dot{r} + \dot{r_o} = J\dot{q}
 \]
-\subsection[Task 2]{Cartesian orientation}
+\subsection[Task 2]{Desired link orientation}
 About cartesian orientation, we want to keep the third link axis vertical, hence we need to attach a vector $p_l$ to this axis:
 \[
 p_l = p_5(q) - p_4(q) \rightarrow p_l(q)
@@ -151,8 +154,8 @@ Due to the high complexity of the task we divided our control scheme into 3 main
 \begin{enumerate}
 	\item \textbf{Priority matrix:} to compute in a fast way the joint velocities executing the task ones, coming from the prioritized stack of tasks.
 	\item \textbf{Priority resolution algorithm:} to organize the stack of tasks accordingly to each ones' \textit{generalized cost}.
-	This concept will be further explained above.
-	\item \textbf{Control algorithm:} to merge both the above methods and generate an optimal joint velocity.
+	This concept will be further explained below.
+	\item \textbf{Control algorithm:} to merge both the above methods and generate a desired joint velocity.
 \end{enumerate}
 
 \subsection{Priority matrix}
@@ -328,7 +331,7 @@ This will allows us to prioritize not only using the \emph{cost} but also the po
 For example if we perform reordering using only the distance and all the control point are outside the \emph{dangerous} region except for one (e.g. $p_{c2}$), this will take over the priority of the cartesian positioning task even if we would like to still execute the desired trajectory. While if we perform the \emph{critic-dangerous} distinction, and initialize the cartesian positioning task to be always in \texttt{stack$_c$}, $p_{c2}$ will rise in the \texttt{stack}, up to the second position without overtaking the highest priority task.
 \subsection{Control algorithm}
 The control algorithm uses the block-scheme below.
-\begin{figure}[t]
+\begin{figure}[H]
 \centering
 \includegraphics[width = 1.2\linewidth]{./plots/ControlSchemeModel.pdf}
 \caption{Block scheme of the control architecture.}
@@ -339,7 +342,7 @@ Note that all the information about the other control points and tasks are inclu
 Those quantities have not been included since they are "known" at the control architecture's level and require no external reference.
 
 \section{Results}
-We organized the experiment accordingly with the distance of the end-effector from the obstacle and with its obstruction on the path. We simulated 3 different situations with 2 different control algorithms for a total of 6 different simulations.
+We organized the simulations accordingly with the distance of the end-effector from the obstacle and with its obstruction on the path. We simulated 3 different situations with 2 different control algorithms for a total of 6 different simulations.
 
 In particular we used for the control algorithms:
 \begin{enumerate}
@@ -392,5 +395,5 @@ For sure we can say that prioritization of tasks and null-space exploitation are
 
 %\bibliography{sample}
 %\bibliographystyle{ieeetr}
-\tableofcontents
+
 \end{document}
