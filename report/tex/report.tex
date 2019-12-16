@@ -52,21 +52,26 @@ A handy yet practical example is the one considered below: a manipulator moving 
 \section{Tasks definition}
 The tasks we used are four and they occupy 6 out of 7 manipulator's DOF:
 \begin{itemize}
-	\item one cartesian positioning task occupying 3 DOF.
+	\item one Cartesian positioning task occupying 3 DOF.
 	\item one link orientation task for the third link axis, which occupies 1 DOF.
 	\item two control points' collision avoidance tasks that will occupy overall 2 DOF.
 \end{itemize}
 \subsection[Task 1]{Cartesian positioning}
-The cartesian positioning task is defined by the direct kinematics of the robot, $f(q)$, so the \textbf{end-effector}'s position is $r = f(q)$. Hence it's straight-forward the expression of this task's velocity with respect to the joints' one: 
+The Cartesian positional task is defined by the direct kinematics of the robot as:
+\[r_d = f(q)
+\] which is used to compute the task analytical Jacobian and the task error, $e = r_d - r$. Hence it's straight-forward the expression of this task's associated velocity: 
 \begin{equation}
 \label{EQN: task1}
- \dot{r} = \diff{f(q)}{q} \dot{q} = J\dot{q}
+ \dot{r_d} = \diff{f(q)}{q} \dot{q} = J\dot{q}
 \end{equation}
+so as 
+\[\dot{q} = J^{\#}\dot{r_d}
+\]
 
 \subsubsection{Collision avoidance}
 In the formulation of our problem, where $\dot{r}$ is given (i.e. precalculated), we are left with finding the right value for $\dot{q}$.
 
-As already said, in our approach, we have also to include the collision avoidance for the end-effector. Instead of treating it as a different task, as we will do for the other control points, we could handle it in a "tricky" way so as to not saturate other DOFs: we will use instead of $\dot{r}$, the \textbf{sum} between $\dot{r}$ and another cartesian velocity, $\dot{r_o}$, pushing the end-effector away from the obstacle. This cartesian velocity will be directed as the distance from the center of the obstacle to the tip of the manipulator, and will have a magnitude weighted by a non-linear gain $v(P,O)$, where $P = f(q)$ is the end-effector position and $O$ is the obstacle position.
+As already said, in our approach, we have also to include the collision avoidance for the end-effector. Instead of treating it as a different task, as we will do for the other control points, we could handle it in a "tricky" way so as to not saturate other DOFs: we will use instead of $\dot{r}$, the \textbf{sum} between $\dot{r}$ and another Cartesian velocity, $\dot{r_o}$, pushing the end-effector away from the obstacle. This Cartesian velocity will be directed as the distance from the center of the obstacle to the tip of the manipulator, and will have a magnitude weighted by a non-linear gain $v(P,O)$, where $P = f(q)$ is the end-effector position and $O$ is the obstacle position.
 Hence:
 \begin{equation}\label{repulsive_dir}
 \dot{r_o} = v(P,O)\frac{f(q) - O}{\lVert f(q) - O \rVert}
@@ -77,62 +82,63 @@ v(P,O) = \frac{V_{max}}{1+e^{(\lVert f(q) -O \rVert(2/\rho)-1)\alpha}}
 
 In the end we will have \eqref{EQN: task1} in the form: 
 \[
-\dot{r} + \dot{r_o} = J\dot{q}
+\dot{r_d} + \dot{r_o} = J\dot{q} \rightarrow \dot{q} = J^{\#}(\dot{r_d}+\dot{r_o})
 \]
 \subsection[Task 2]{Desired link orientation}
-About cartesian orientation, we want to keep the third link axis vertical, hence we need to attach a vector $p_l$ to this axis:
+About Cartesian orientation, we want to keep the third link axis vertical, hence we need to attach a vector $p_l$ to this axis:
 \[
 p_l = p_5(q) - p_4(q) \rightarrow p_l(q)
 \]
-We are interested in keeping the elevation of this one vertical, which in spherical coordinates coincides with saying $\phi(q) = 0$, where:
-\begin{gather*}
-\phi(q) = \texttt{arccos}(p(q))\\
-p(q) = \frac{p_{l,z}(q)}{\norm{p_l(q)}}
-\end{gather*}
-Whose associated jacobian is :
+Where $p_5(q)$ and $p_4(q)$ are the 4$^{th}$ and 5$^{th}$ DH reference frames' origin.
+
+We are interested in keeping the elevation, $\phi$, of this link vertical. Transforming $p_l(q)$'s coordinates from Cartesian to spherical, we can express this second task as:
+\[
+r_2 = \phi(q) = \text{arccos}(\frac{p_{l,z}(q)}{\norm{p_l(q)}})
+\]
+Using $d_l(q) = \frac{p_{l,z}(q)}{\norm{p_l(q)}}$, we can more practically compute its associated Jacobian as:
 \begin{equation}
-\dot{\phi} = \diff{\phi}{p}\diff{p}{q}\dot{q}
+J_2 = \diff{\text{arccos}(d_l)}{d_l}\diff{d_l}{q}\dot{q}
 \end{equation}
-And, computing each block independently we get that:
-\begin{align}
-\diff{\phi}{p} &= \frac{-1}{\sqrt{1-p^2}}\\
-\diff{p}{q} &= \frac{p_{l,z}(q)^{'}\norm{p_l(q)} - p_{l,z}(q)\norm{p_l(q)}^{'}}{\norm{p_l(q)}^2} \nonumber \\
-&= (\frac{\hat{z}^T\norm{p_l(q)}^2 - p_{l,z}(q)p_l(q)^T}{\norm{p_l(q)}^3})\begin{bmatrix}
-J_5 - J_4
-\end{bmatrix}
-\end{align}
-Where we know that $p_{l,z}(q)^{'}$ and $\norm{p_{l}(q)}^{'}$ are defined as below, using $\hat{z}^T = \begin{bmatrix}
-0&0&1
-\end{bmatrix}$.
-\begin{align*}
-p_{l,z}(q)^{'}&= \diff{p_{l,z}(q)}{q} = \hat{z}^T\begin{bmatrix}
-J_5 - J_4
-\end{bmatrix} \\
-\norm{p_l(q)}^{'}&=\diff{(\norm{p_l(q)})}{q}= \frac{p_{l,z}(q)p_l(q)^T}{\norm{p_l(q)}}\begin{bmatrix}
-J_5-J_4
-\end{bmatrix}
-\end{align*}
+%And, computing each block independently we get that:
+%\begin{align}
+%\diff{\phi}{p} &= \frac{-1}{\sqrt{1-p^2}}\\
+%\diff{p}{q} &= \frac{p_{l,z}(q)^{'}\norm{p_l(q)} - p_{l,z}(q)\norm{p_l(q)}^{'}}{\norm{p_l(q)}^2} \nonumber \\
+%&= (\frac{\hat{z}^T\norm{p_l(q)}^2 - p_{l,z}(q)p_l(q)^T}{\norm{p_l(q)}^3})\begin{bmatrix}
+%J_5 - J_4
+%\end{bmatrix}
+%\end{align}
+%Where we know that $p_{l,z}(q)^{'}$ and $\norm{p_{l}(q)}^{'}$ are defined as below, using $\hat{z}^T = \begin{bmatrix}
+%0&0&1
+%\end{bmatrix}$.
+%\begin{align*}
+%p_{l,z}(q)^{'}&= \diff{p_{l,z}(q)}{q} = \hat{z}^T\begin{bmatrix}
+%J_5 - J_4
+%\end{bmatrix} \\
+%\norm{p_l(q)}^{'}&=\diff{(\norm{p_l(q)})}{q}= \frac{p_{l,z}(q)p_l(q)^T}{\norm{p_l(q)}}\begin{bmatrix}
+%J_5-J_4
+%\end{bmatrix}
+%\end{align*}
 
 
 \subsection[Tasks 3 \& 4]{Control points' collision avoidance}
 When dealing with the collision avoidance task linked to the two control points we were left with only 2 DOFs for both so we had to use one for each point. We couldn't use the same approach we used for the end-effector but at the same time something rather similar has to be done. 
 
-To compress the three DOFs into one, we projected the collision avoidance task velocity, $\mathbf{\dot{r_{o}}_{,i}}$ computed as in \eqref{repulsive_dir} but using the control point position as $P$, onto the direction of the velocity itself. In this way we get a task velocity which is a scalar (1 DOF) equal to the magnitude of the original one (i.e. \eqref{repulsive_mag}).
+To compress the three DOFs into one, we projected the collision avoidance task velocity, $\mathbf{\dot{r_{o}}_{,i}}$ computed as in \eqref{repulsive_dir} but using the control point position $P_c$ as $P$, onto the direction of the velocity itself. In this way we get a task velocity which is a scalar (1 DOF) equal to the magnitude of the original one (i.e. \eqref{repulsive_mag}).
 
 Defining 
 \begin{itemize}
-	\item $\eta = \frac{P - O}{\lVert P-O \rVert}$
-	\item $P$ as the control point's position
+	\item $\eta = \frac{P_c - O}{\norm{P_c-O}}$
+	\item $P_c$ as the control point's position
 	\item $O$ as the position of the obstacle
-	\item $J_i$ as the analytical jacobian associated to the $i$-th control point
+	\item $J_i$ as the analytical jacobian associated to the $i^{th}$ control point
 \end{itemize}
 we end up with:
 \begin{equation*}
-\eta^T\dot{r_{o}}_{,i} = v(P,O) =\eta^T J_i\dot{q} = J_{c,i}\dot{q}
+\eta^T\dot{r_{o}}_{,i} = v(P_c,O) =\eta^T J_i\dot{q} = J_{c,i}\dot{q}
 \end{equation*}
 Hence:
 \begin{equation}
-v(P,O) = J_{c,i}\dot{q}
+v(P_c,O) = J_{c,i}\dot{q} \rightarrow \dot{q} = J_{c,i}^{\#}v(P_c,O)
 \end{equation}
 
 \subsubsection{Points' positioning}
@@ -294,7 +300,7 @@ Since the temporary \textbf{F} matrix is already upper triangular, Gauss Jordan 
 \item Then, all elements in the column block outside the diagonal should be set to zero. By considering the structure of the temporary matrix, and considering i<j, to nullify a block (i,j) by subtracting to the i-th row block the block (i,j) times the j-th row block. If after the first step the j-th pivot was an Identity matrix, then all elements in the block (i,j) are zeroed.
 \end{itemize}
 When all the steps are made for each task, then in order to get the Task Priority Matrix we will simply need to transpose the last temporary matrix obtained by the algorithm.
-It is important to notice that in the first step just described we required the inverse of the pivot matrix, but since the k-th pivot matrix is only not singular if the k-th task is not singular and linearly independent from the higher order tasks we might not be able to do the inversion. Therefore, instead of the simple inversion we can use the pseudoinverse of the pivot matrix and in a damped version. Doing this we can obtain damped solutions that are better and smoother when we are reaching tasks’ singularities.
+It is important to notice that in the first step just described we required the inverse of the pivot matrix, but since the k-th pivot matrix is only not singular if the k-th task is not singular and linearly independent from the higher order tasks we might not be able to do the inversion. Therefore, instead of the simple inversion we can use the pseudoinverse of the pivot matrix and in a damped version. Doing this we can obtain damped solutions that are better and smoother when we are reaching tasks' singularities.
 \subsection{Priority resolution algorithm}
 In this framework we will define:
 \begin{enumerate}
@@ -304,11 +310,18 @@ In this framework we will define:
 \item[-] \texttt{stack} the array of Jacobians associated to each task.
 \end{enumerate}
 To keep a solution which is consistent with respect to our problem, we need an efficient resolution of the priority assignment and a meaningful cost for each task.
-\subsubsection{Cost}
-Since in this application \textit{almost} each task is associated to the movement of a cartesian point, we used the \textbf{distance} of that point from the obstacle.
-About \textit{task 2}, associated to a cartesian orientation, we simply said it will have a constant cost computed as $d + 1$, so as to be always non-critical, this is due to the fact that we are not quite interested in the orientation task as we are in collision avoidance but we will also like that it is executed with a higher priority if we are in a normal operation point.
+\subsubsection{Generalized cost}
+In order to keep track of each task's priority, we need to organize our \texttt{stack}. Doing so requires to evaluate a cost function on the tasks for which the higher is the cost, the higher is the priority. Due to the fact that in this application all the tasks but the second, can be derived from the movement of a Cartesian point, we can use the distance of that particular point from the obstacle as our cost function.
 
-Note that many other choices could have be possible. Here a few that has been considered at the beginning:
+As already said, unfortunately, the second task is not associated with any point, thus a decision has to be made: since we are not really interested in the execution of this task, we can simply say its cost is $d+1$, where we recall that \textit{d} is the \emph{dangerous distance} from the obstacle.
+
+Doing so implies that this task will never overcome the others, which are associated with collision avoidance.
+
+
+%Since in this application \textit{almost} each task is associated to the movement of a Cartesian point, we used the \textbf{distance} of that point from the obstacle.
+%About \textit{task 2}, associated to a Cartesian orientation, we simply said it will have a constant cost computed as $d + 1$, so as to be always non-critical, this is due to the fact that we are not quite interested in the orientation task as we are in collision avoidance but we will also like that it is executed with a higher priority if we are in a normal operation point.
+
+Note that many other choices for the cost could have been possible. Here a few that has been considered at the beginning:
 \begin{list}{\textbf{Case:}}{}
 \item Project the distance from the obstacle onto the instantaneous direction of motion for each control point, keep second task's cost constant.
 \item Same as before but assign a control point to the midpoint of the third link to compute second task's cost.
@@ -328,7 +341,7 @@ We divided the \texttt{stack} into 2 sub-vectors whose dimensions, if summed, ar
 \end{enumerate}
 This will allows us to prioritize not only using the \emph{cost} but also the position of a task in the \texttt{stack}.
 
-For example if we perform reordering using only the distance and all the control point are outside the \emph{dangerous} region except for one (e.g. $p_{c2}$), this will take over the priority of the cartesian positioning task even if we would like to still execute the desired trajectory. While if we perform the \emph{critic-dangerous} distinction, and initialize the cartesian positioning task to be always in \texttt{stack$_c$}, $p_{c2}$ will rise in the \texttt{stack}, up to the second position without overtaking the highest priority task.
+For example if we perform reordering using only the distance and all the control point are outside the \emph{dangerous} region except for one (e.g. $p_{c2}$), this will take over the priority of the Cartesian positioning task even if we would like to still execute the desired trajectory. While if we perform the \emph{critic-dangerous} distinction, and initialize the Cartesian positioning task to be always in \texttt{stack$_c$}, $p_{c2}$ will rise in the \texttt{stack}, up to the second position without overtaking the highest priority task.
 \subsection{Control algorithm}
 The control algorithm uses the block-scheme below.
 \begin{figure}[H]
@@ -380,7 +393,7 @@ An interesting fact comes from the values the joint velocities assume for the fi
 \tablePlot[.33]{control_points_distances}{Control points' distances for the above cases:}
 \subsection{Obstacle on path.}
 
-In this case the obstacle is placed directly on the path, and we can see that the error associated with the cartesian positioning task is order of magnitude higher than all the previous case. A good test and proof for our control scheme is the fact that however big was this error we completed recovered it, and as soon as it has been possible we converged back to the path.
+In this case the obstacle is placed directly on the path, and we can see that the error associated with the Cartesian positioning task is order of magnitude higher than all the previous case. A good test and proof for our control scheme is the fact that however big was this error we completed recovered it, and as soon as it has been possible we converged back to the path.
 
 An interesting fact is that in this case, our problem might seem more difficult to solve while is indeed easier to handle. We can see that the control points almost never interact with the obstacle, hence the main discontinuities come from the tasks 1 and 2. The only time the control points start being problematic, is with the first algorithm when the second point gets too near to the obstacle and this result in a spike in joint velocities which gets smoothed quite fast.
 
