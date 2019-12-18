@@ -33,6 +33,7 @@
 	
 	\newpage
 	\tableofcontents
+	\newpage
 	
 \begin{abstract}
 	\textbf{
@@ -48,6 +49,146 @@
 Due to their high dexterity and the absence of non-holonomic constraints, manipulators has been used to perform a wide range of operation, and sometimes even more of them at the same time.
 
 A handy yet practical example is the one considered below: a manipulator moving in a cluttered environment, trying to complete a trajectory tracking task and, at the same time, avoid collision with obstacles nearby.
+
+We will first introduce the instrument on which this project is based, the \textbf{Task Priority Matrix} and then there will be a presentation of the tasks we want to execute and the algorithm we used to set their priority. At the end, there will be a discussion of the results acquired from different simulation set up in different conditions (i.e. different kind of paths, point-to-point motion and multi-obstacle).
+
+\section{Priority matrix}
+\subsection{Redundancy Resolution Problem}
+The redundancy resolution problem consists in finding the robot command in order to execute a series of tasks, usually organized in a Stack of Task.
+More generally, considering $k$ a generic task, the problem can be formalized through an equality relation \[A_kx=b_k\]
+with the matrix $A_k \in \R^{mk \times n}$, and the vector $b \in \R^{mk}$. $n$ is the Degree of Freedom (DoF) of the system, and $mk$ is the task dimension ($mk \geq n$). The solution $x \in \Bbb R^n$ represents the robot motion for accomplishing the task.
+Taking into account a SoT, instead, the transformation matrix and task vector can be simply defined by doing:
+\[A=\begin{bmatrix}
+A_1^T & A_2^T & \dots & A_l^T
+\end{bmatrix}
+\]
+and
+\[b=\begin{bmatrix}
+b_1^T & b_2^T & \dots & b_l^T
+\end{bmatrix}
+\]
+
+Where matrix \textbf{A} has dimension $\sum_{k=1}^l m_k \times n$, and vector \textbf{b} has dimension $\sum_{k=1}^l m_k \leq n$.
+And the problem can be formalized through an equality relation: \[Ax = b\]
+
+\subsection{The Siciliano And Slotine Solution}
+
+If more than one task needs to be executed at the same time, though, we need to define a certain priority of execution between them. One way to handle the priority is  to consider it as a strict execution order between tasks. A second approach, though, consists in handling the priority as a weight for the cost function that the solver has to minimize.
+The most used solution to solve the redundancy resolution problem is obtained by projecting a task in the null space of higher priority task, as proposed by Siciliano and Slotine (1991). Starting with $P_0 = I$ (the $n \times n$ Identity matrix) and $x_0 = 0$ (the $n \times 1$ zero vector), the contribution of each task, from the highest priority task $k = 1$ to the lowest priority task $k = l$, is computed as:
+\[
+x_k = x_{k-1} + (A_kP_{k-1})^{\#}(b_k - A_kx_{k-1})
+\]where \[
+P_k = P_{k-1}-(A_kP_{k-1})^{\#}A_kP_{k-1}
+\]
+is the projector in the null space of the all tasks from 1 to $k$.
+With the development of this project, instead, we were able to investigate a different redundancy resolution methodology presented by Flacco. This approach is fast thanks to recent technologies and moreover presents interesting properties that allows us to have a little more insights and control about the stack of tasks due to the separation of the redundancy resolution from the assignment of the correct priority order. 
+\subsection{The Task Priority Matrix}
+
+Taking into account a SoT composed by l tasks, the non prioritized solution is obtained by inverting the augmented task:
+\[
+\overline{x} = A^\#b\]
+If all the tasks are linearly independent, then they do not conflict with each other and they will be correctly executed by computing a solution which is equal to the one computed by the Siciliano algorithm. Otherwise conflicting tasks need to be accommodated.
+An important aspect of the base solution, though, is that the contribution of each task and the task null space, can be easily extrapolated from $A^\#$, and this information can be useful when tasks need to be reordered or for other purposes. On the other hand, all this knowledge is lost in the Siciliano solution due to the projection of a task in the null space of a linearly depended higher priority task. 
+So, in order to gain all these information while still imposing the correct task priority we need to find a matrix \textbf{F} that is able to enforce the task priority, such that the solution computed as: \[x = A^\#Fb\]
+will be the same as the solution of the Siciliano algorithm.
+\textbf{F} will be called the task priority matrix and from the equation is visible that this approach is effectively able to separate the redundancy resolution step from the imposition of the priority order, making it simpler to gain information of the task state and reorder the tasks at each iteration.
+\paragraph{\textit{Rank 1 Case Study:}}
+In order to understand how \textbf{F} can be chosen and have an insight about the knowledge that can be extrapolated from $A^\#$  we will report a simple example involving rank-1 tasks (mono dimensional tasks).
+Suppose we have a SoT composed by two rank-1 linearly dependent tasks $a_1x = b_1$ and $a_2x = b_2$ . Namely, $a_2 = da_1$ , with $d \in \R$.
+The solution obtained by the Siciliano algorithm is:\[
+x=\begin{bmatrix}
+a_1^\# & 0 
+\end{bmatrix}
+\begin{pmatrix}
+b_1 \\ b_2
+\end{pmatrix}
+\]
+which is equivalent to $x = a_1^\#b_1$ and therefore I can see only the contribution of the first task in the solution while the second task’s is lost.
+On the other hand, if we compute the solution without priority we obtain.
+\[
+\overline{x} = 
+\begin{bmatrix}
+a_1 \\ a_2
+\end{bmatrix}^\#
+\begin{pmatrix}
+b_1 \\ b_2
+\end{pmatrix} = 
+\begin{bmatrix}
+\frac{1}{1+d^2}a_1^\# & \frac{d}{1+d^2}a_1^\#
+\end{bmatrix}
+\begin{pmatrix}
+b_1 \\ b_2
+\end{pmatrix}
+\]
+where now is evident the contribution of both tasks in the computation of the solution.
+Now we need to define a matrix \textbf{F}  such that the 2 solutions given by (2) and (3) are the same and this can be done by choosing the matrix as:
+\[
+F = \begin{bmatrix}
+1 & 0 \\ d & 0
+\end{bmatrix}
+\]
+and the solution with priority can be obtained by computing:
+\[
+x = 
+\begin{bmatrix}
+a_1 \\ a_2
+\end{bmatrix}^\#F
+\begin{pmatrix}
+b_1 \\ b_2
+\end{pmatrix}
+=\begin{bmatrix}
+a_1^\# & 0 
+\end{bmatrix}
+\begin{pmatrix}
+b_1 \\ b_2
+\end{pmatrix}
+\]
+\paragraph{\textit{F General Structure:}}
+
+By adding other tasks and by proceeding with the same comparing reasoning, can be shown that the F matrix display a particular structure:
+\begin{itemize}
+\item it is lower triangular;
+\item it has ones on the diagonal, in correspondence of tasks linearly independent to higher priority tasks;
+\item it has zeros on the diagonal, in correspondence of tasks linearly dependent to higher priority tasks;
+\item it presents the coefficients of dependency in the left side of rows associated to tasks linearly dependent to higher priority tasks;
+\end{itemize}
+Moreover, the computation of this matrix can be easily done by computing the reduced row echelon form (rref) of $A^T$.
+\paragraph{\textit{General Case:}}
+
+When we consider tasks with dimension $>$ 1 then the task priority matrix still shows a similar structure to the one depicted above, but now single elements are substituted by square block matrices whose dimension is the same of the associated task. Then, taking a reasoning similar to the approach used in the rank-1 case, a tool similar to the rref for finding the tasks priority matrix \textbf{F} can be developed. The Gauss Jordan elimination is still used, as in rref, but considering pivot square matrices instead of pivot elements. Once again, the dimension of a pivot matrix is guided by the size of
+the task.
+
+\paragraph{\textit{The Algorithm:}} 
+
+From now on we will refer to the general case and therefore we are going to develop a tool similar to the rref in order to obtain the Task Priority Matrix.
+First is useful to use the QR decomposition of the augmented matrix \textbf{A} to compute its pseudoinverse.
+\[
+A^T = Q\begin{bmatrix}
+R\\0
+\end{bmatrix}
+\]
+
+From which the pseudoinverse is computed as $A^\# = QR^{-T}$. $R \in \R^{m\times m}$ is an upper triangular matrix that can be used to initialize the \textbf{F} matrix, while $Q \in \R^{n\times n}$.
+As already mentioned in the previous section to obtain the priority task matrix we will perform the same steps of the Gauss Jordan elimination, but considering block matrices. Moreover, the all the operation are applied in place so at each step we will work on the modified matrix obtained at the previous step until we reach the final Task Priority Matrix.
+So, at start we initialize the temporary \textbf{F} in the following way:
+\[
+\overline{F} = \bordermatrix{
+~& m_1 & m_2 & & m_l\cr
+m_1 & R_{11} & \star & \dots & \star \cr
+m_2 & 0 & R_{22} & \dots & \star \cr
+~ & 0 & 0 & \dots & \star \cr
+m_l & 0 & 0 & \dots & R_{ll}
+}
+\]
+where $m_{i-th}$ indicates the dimensions of the i-th tasks and the block pivot matrices are indicated explicitly, meanwhile the rest of the \textbf{R} matrix is not relevant.
+From the properties of the QR decomposition, the diagonal blocks $\textbf{R}_{\textbf{kk}}$ is not singular if task \emph{k} is not singular and linearly independent to all tasks with higher priority.
+Since the temporary \textbf{F} matrix is already upper triangular, Gauss Jordan elimination requires 2 steps for each task:
+\begin{itemize}
+\item First we need to set the pivot matrices to the Identity matrix by multiplying each block row with the pseudoinverse of its pivot matrix.
+\item Then, all elements in the column block outside the diagonal should be set to zero. By considering the structure of the temporary matrix, and considering i<j, to nullify a block (i,j) by subtracting to the i-th row block the block (i,j) times the j-th row block. If after the first step the j-th pivot was an Identity matrix, then all elements in the block (i,j) are zeroed.
+\end{itemize}
+When all the steps are made for each task, then in order to get the Task Priority Matrix we will simply need to transpose the last temporary matrix obtained by the algorithm.
+It is important to notice that in the first step just described we required the inverse of the pivot matrix, but since the k-th pivot matrix is only not singular if the k-th task is not singular and linearly independent from the higher order tasks we might not be able to do the inversion. Therefore, instead of the simple inversion we can use the pseudoinverse of the pivot matrix and in a damped version. Doing this we can obtain damped solutions that are better and smoother when we are reaching tasks' singularities.
 
 \section{Tasks definition}
 The tasks we used are four and they occupy 6 out of 7 manipulator's DOF:
@@ -155,153 +296,16 @@ For this particular manipulator we chose 3 control points:
 \end{bmatrix}
 \]
 \end{enumerate}
-\section{Control architecture}
-Due to the high complexity of the task we divided our control scheme into 3 main blocks:
-\begin{enumerate}
-	\item \textbf{Priority matrix:} to compute in a fast way the joint velocities executing the task ones, coming from the prioritized stack of tasks.
-	\item \textbf{Priority resolution algorithm:} to organize the stack of tasks accordingly to each ones' \textit{generalized cost}.
-	This concept will be further explained below.
-	\item \textbf{Control algorithm:} to merge both the above methods and generate a desired joint velocity.
-\end{enumerate}
+%\section{Priority resolution algorithm}
+%Due to the high complexity of the task we divided our control scheme into 3 main blocks:
+%\begin{enumerate}
+%	\item \textbf{Priority matrix:} to compute in a fast way the joint velocities executing the task ones, coming from the %prioritized stack of tasks.
+%	\item \textbf{Priority resolution algorithm:} to organize the stack of tasks accordingly to each ones' \textit{generalized cost}.
+%	This concept will be further explained below.
+%	\item \textbf{Control algorithm:} to merge both the above methods and generate a desired joint velocity.
+%\end{enumerate}
 
-\subsection{Priority matrix}
-\subsubsection{Redundancy Resolution Problem}
-The redundancy resolution problem consists in finding the robot command in order to execute a series of tasks, usually organized in a Stack of Task.
-More generally, considering $k$ a generic task, the problem can be formalized through an equality relation \[A_kx=b_k\]
-with the matrix $A_k \in \R^{mk \times n}$, and the vector $b \in \R^{mk}$. $n$ is the Degree of Freedom (DoF) of the system, and $mk$ is the task dimension ($mk \geq n$). The solution $x \in \Bbb R^n$ represents the robot motion for accomplishing the task.
-Taking into account a SoT, instead, the transformation matrix and task vector can be simply defined by doing:
-\[A=\begin{bmatrix}
-A_1^T & A_2^T & \dots & A_l^T
-\end{bmatrix}
-\]
-and
-\[b=\begin{bmatrix}
-b_1^T & b_2^T & \dots & b_l^T
-\end{bmatrix}
-\]
-
-Where matrix \textbf{A} has dimension $\sum_{k=1}^l m_k \times n$, and vector \textbf{b} has dimension $\sum_{k=1}^l m_k \leq n$.
-And the problem can be formalized through an equality relation: \[Ax = b\]
-
-\subsubsection{The Siciliano And Slotine Solution}
-
-If more than one task needs to be executed at the same time, though, we need to define a certain priority of execution between them. One way to handle the priority is  to consider it as a strict execution order between tasks. A second approach, though, consists in handling the priority as a weight for the cost function that the solver has to minimize.
-The most used solution to solve the redundancy resolution problem is obtained by projecting a task in the null space of higher priority task, as proposed by Siciliano and Slotine (1991). Starting with $P_0 = I$ (the $n \times n$ Identity matrix) and $x_0 = 0$ (the $n \times 1$ zero vector), the contribution of each task, from the highest priority task $k = 1$ to the lowest priority task $k = l$, is computed as:
-\[
-x_k = x_{k-1} + (A_kP_{k-1})^{\#}(b_k - A_kx_{k-1})
-\]where \[
-P_k = P_{k-1}-(A_kP_{k-1})^{\#}A_kP_{k-1}
-\]
-is the projector in the null space of the all tasks from 1 to $k$.
-With the development of this project, instead, we were able to investigate a different redundancy resolution methodology presented by Flacco. This approach is fast thanks to recent technologies and moreover presents interesting properties that allows us to have a little more insights and control about the stack of tasks due to the separation of the redundancy resolution from the assignment of the correct priority order. 
-\subsubsection{The Task Priority Matrix}
-
-Taking into account a SoT composed by l tasks, the non prioritized solution is obtained by inverting the augmented task:
-\[
-\overline{x} = A^\#b\]
-If all the tasks are linearly independent, then they do not conflict with each other and they will be correctly executed by computing a solution which is equal to the one computed by the Siciliano algorithm. Otherwise conflicting tasks need to be accommodated.
-An important aspect of the base solution, though, is that the contribution of each task and the task null space, can be easily extrapolated from $A^\#$, and this information can be useful when tasks need to be reordered or for other purposes. On the other hand, all this knowledge is lost in the Siciliano solution due to the projection of a task in the null space of a linearly depended higher priority task. 
-So, in order to gain all these information while still imposing the correct task priority we need to find a matrix \textbf{F} that is able to enforce the task priority, such that the solution computed as: \[x = A^\#Fb\]
-will be the same as the solution of the Siciliano algorithm.
-\textbf{F} will be called the task priority matrix and from the equation is visible that this approach is effectively able to separate the redundancy resolution step from the imposition of the priority order, making it simpler to gain information of the task state and reorder the tasks at each iteration.
-\paragraph{\textit{Rank 1 Case Study:}}
-In order to understand how \textbf{F} can be chosen and have an insight about the knowledge that can be extrapolated from $A^\#$  we will report a simple example involving rank-1 tasks (mono dimensional tasks).
-Suppose we have a SoT composed by two rank-1 linearly dependent tasks $a_1x = b_1$ and $a_2x = b_2$ . Namely, $a_2 = da_1$ , with $d \in \R$.
-The solution obtained by the Siciliano algorithm is:\[
-x=\begin{bmatrix}
-a_1^\# & 0 
-\end{bmatrix}
-\begin{pmatrix}
-b_1 \\ b_2
-\end{pmatrix}
-\]
-which is equivalent to $x = a_1^\#b_1$ and therefore I can see only the contribution of the first task in the solution while the second task’s is lost.
-On the other hand, if we compute the solution without priority we obtain.
-\[
-\overline{x} = 
-\begin{bmatrix}
-a_1 \\ a_2
-\end{bmatrix}^\#
-\begin{pmatrix}
-b_1 \\ b_2
-\end{pmatrix} = 
-\begin{bmatrix}
-\frac{1}{1+d^2}a_1^\# & \frac{d}{1+d^2}a_1^\#
-\end{bmatrix}
-\begin{pmatrix}
-b_1 \\ b_2
-\end{pmatrix}
-\]
-where now is evident the contribution of both tasks in the computation of the solution.
-Now we need to define a matrix \textbf{F}  such that the 2 solutions given by (2) and (3) are the same and this can be done by choosing the matrix as:
-\[
-F = \begin{bmatrix}
-1 & 0 \\ d & 0
-\end{bmatrix}
-\]
-and the solution with priority can be obtained by computing:
-\[
-x = 
-\begin{bmatrix}
-a_1 \\ a_2
-\end{bmatrix}^\#F
-\begin{pmatrix}
-b_1 \\ b_2
-\end{pmatrix}
-=\begin{bmatrix}
-a_1^\# & 0 
-\end{bmatrix}
-\begin{pmatrix}
-b_1 \\ b_2
-\end{pmatrix}
-\]
-\paragraph{\textit{F General Structure:}}
-
-By adding other tasks and by proceeding with the same comparing reasoning, can be shown that the F matrix display a particular structure:
-\begin{itemize}
-\item it is lower triangular;
-\item it has ones on the diagonal, in correspondence of tasks linearly independent to higher priority tasks;
-\item it has zeros on the diagonal, in correspondence of tasks linearly dependent to higher priority tasks;
-\item it presents the coefficients of dependency in the left side of rows associated to tasks linearly dependent to higher priority tasks;
-\end{itemize}
-Moreover, the computation of this matrix can be easily done by computing the reduced row echelon form (rref) of $A^T$.
-\paragraph{\textit{General Case:}}
-
-When we consider tasks with dimension $>$ 1 then the task priority matrix still shows a similar structure to the one depicted above, but now single elements are substituted by square block matrices whose dimension is the same of the associated task. Then, taking a reasoning similar to the approach used in the rank-1 case, a tool similar to the rref for finding the tasks priority matrix \textbf{F} can be developed. The Gauss Jordan elimination is still used, as in rref, but considering pivot square matrices instead of pivot elements. Once again, the dimension of a pivot matrix is guided by the size of
-the task.
-
-\paragraph{\textit{The Algorithm:}} 
-
-From now on we will refer to the general case and therefore we are going to develop a tool similar to the rref in order to obtain the Task Priority Matrix.
-First is useful to use the QR decomposition of the augmented matrix \textbf{A} to compute its pseudoinverse.
-\[
-A^T = Q\begin{bmatrix}
-R\\0
-\end{bmatrix}
-\]
-
-From which the pseudoinverse is computed as $A^\# = QR^{-T}$. $R \in \R^{m\times m}$ is an upper triangular matrix that can be used to initialize the \textbf{F} matrix, while $Q \in \R^{n\times n}$.
-As already mentioned in the previous section to obtain the priority task matrix we will perform the same steps of the Gauss Jordan elimination, but considering block matrices. Moreover, the all the operation are applied in place so at each step we will work on the modified matrix obtained at the previous step until we reach the final Task Priority Matrix.
-So, at start we initialize the temporary \textbf{F} in the following way:
-\[
-\overline{F} = \bordermatrix{
-~& m_1 & m_2 & & m_l\cr
-m_1 & R_{11} & \star & \dots & \star \cr
-m_2 & 0 & R_{22} & \dots & \star \cr
-~ & 0 & 0 & \dots & \star \cr
-m_l & 0 & 0 & \dots & R_{ll}
-}
-\]
-where $m_{i-th}$ indicates the dimensions of the i-th tasks and the block pivot matrices are indicated explicitly, meanwhile the rest of the \textbf{R} matrix is not relevant.
-From the properties of the QR decomposition, the diagonal blocks $\textbf{R}_{\textbf{kk}}$ is not singular if task \emph{k} is not singular and linearly independent to all tasks with higher priority.
-Since the temporary \textbf{F} matrix is already upper triangular, Gauss Jordan elimination requires 2 steps for each task:
-\begin{itemize}
-\item First we need to set the pivot matrices to the Identity matrix by multiplying each block row with the pseudoinverse of its pivot matrix.
-\item Then, all elements in the column block outside the diagonal should be set to zero. By considering the structure of the temporary matrix, and considering i<j, to nullify a block (i,j) by subtracting to the i-th row block the block (i,j) times the j-th row block. If after the first step the j-th pivot was an Identity matrix, then all elements in the block (i,j) are zeroed.
-\end{itemize}
-When all the steps are made for each task, then in order to get the Task Priority Matrix we will simply need to transpose the last temporary matrix obtained by the algorithm.
-It is important to notice that in the first step just described we required the inverse of the pivot matrix, but since the k-th pivot matrix is only not singular if the k-th task is not singular and linearly independent from the higher order tasks we might not be able to do the inversion. Therefore, instead of the simple inversion we can use the pseudoinverse of the pivot matrix and in a damped version. Doing this we can obtain damped solutions that are better and smoother when we are reaching tasks' singularities.
-\subsection{Priority resolution algorithm}
+\section{Priority resolution algorithm}
 In this framework we will define:
 \begin{enumerate}
 \item[-] $O$ the position of the obstacle in the workspace.
@@ -310,7 +314,7 @@ In this framework we will define:
 \item[-] \texttt{stack} the array of Jacobians associated to each task.
 \end{enumerate}
 To keep a solution which is consistent with respect to our problem, we need an efficient resolution of the priority assignment and a meaningful cost for each task.
-\subsubsection{Generalized cost}
+\subsection{Generalized cost}
 In order to keep track of each task's priority, we need to organize our \texttt{stack}. Doing so requires to evaluate a cost function on the tasks for which the higher is the cost, the higher is the priority. Due to the fact that in this application all the tasks but the second, can be derived from the movement of a Cartesian point, we can use the distance of that particular point from the obstacle as our cost function.
 
 As already said, unfortunately, the second task is not associated with any point, thus a decision has to be made: since we are not really interested in the execution of this task, we can simply say its cost is $d+1$, where we recall that \textit{d} is the \emph{dangerous distance} from the obstacle.
@@ -327,7 +331,7 @@ Note that many other choices for the cost could have been possible. Here a few t
 \item Same as before but assign a control point to the midpoint of the third link to compute second task's cost.
 \item Add and remove from the stack the task associated with control points.
 \end{list}
-\subsubsection{Priority assignment}
+\subsection{Priority assignment}
 
 The assignment of the priority passes trough the reordering of the \texttt{stack} so as the task with priority $0$ will be the first element.
 In this case we want to reorder the tasks differently based on the position of their associated point in the space.
