@@ -198,21 +198,20 @@ The tasks we used are four and they occupy 6 out of 7 manipulator's DOF:
 	\item two control points' collision avoidance tasks that will occupy overall 2 DOF.
 \end{itemize}
 \subsection[Task 1]{Cartesian positioning}
-The Cartesian positional task is defined by the direct kinematics of the robot as:
-\[r_d = f(q)
-\] which is used to compute the task analytical Jacobian and the task error, $e = r_d - r$. Hence it's straight-forward the expression of this task's associated velocity: 
+The end-effector position is defined by the direct kinematics of the robot as:
+\[
+r_{ee} = f(q) \rightarrow \dot{r}_{ee} = \diff{f(q)}{q}\dot{q} = J_1\dot{q}
+\]
+This means that if we define $r_{d1}$ as the desired task velocity for the end effector, and the error as $e_1 = r_{d1} - r_{ee}$, we can find the joint velocity realizing this task with a feedback plus feed-forward control law, whose expression will be given by the following:
 \begin{equation}
 \label{EQN: task1}
- \dot{r_d} = \diff{f(q)}{q} \dot{q} = J\dot{q}
+\dot{q} = J_1^{\#}(\dot{r}_{d1} + K_{p1}e_1)
 \end{equation}
-so as 
-\[\dot{q} = J^{\#}\dot{r_d}
-\]
-
+Where $K_{p1}$ is a positive definite gain matrix.
 \subsubsection{Collision avoidance}
-In the formulation of our problem, where $\dot{r}$ is given (i.e. precalculated), we are left with finding the right value for $\dot{q}$.
+In the formulation of our problem, where $\dot{r}_{d1}$ is given (i.e. precalculated), we have also to include the collision avoidance for the end-effector. 
 
-As already said, in our approach, we have also to include the collision avoidance for the end-effector. Instead of treating it as a different task, as we will do for the other control points, we could handle it in a "tricky" way so as to not saturate other DOFs: we will use instead of $\dot{r}$, the \textbf{sum} between $\dot{r}$ and another Cartesian velocity, $\dot{r_o}$, pushing the end-effector away from the obstacle. This Cartesian velocity will be directed as the distance from the center of the obstacle to the tip of the manipulator, and will have a magnitude weighted by a non-linear gain $v(P,O)$, where $P = f(q)$ is the end-effector position and $O$ is the obstacle position.
+Instead of treating it as a different task, as we will do for the other control points, we could handle it in a "tricky" way so as to not saturate other DOFs: we will use as a feed-forward term, instead of $\dot{r}_{d1}$, the \textbf{sum} between $\dot{r}_{d1}$ and another Cartesian velocity, $\dot{r_o}$, pushing the end-effector away from the obstacle. This Cartesian velocity will be directed as the distance from the center of the obstacle to the tip of the manipulator, and will have a magnitude weighted by a non-linear gain $v(P,O)$, where $P = f(q)$ is the end-effector position and $O$ is the obstacle position.
 Hence:
 \begin{equation}\label{repulsive_dir}
 \dot{r_o} = v(P,O)\frac{f(q) - O}{\lVert f(q) - O \rVert}
@@ -223,44 +222,50 @@ v(P,O) = \frac{V_{max}}{1+e^{(\lVert f(q) -O \rVert(2/\rho)-1)\alpha}}
 
 In the end we will have \eqref{EQN: task1} in the form: 
 \[
-\dot{r_d} + \dot{r_o} = J\dot{q} \rightarrow \dot{q} = J^{\#}(\dot{r_d}+\dot{r_o})
+\dot{q} = J_1^{\#}(\dot{r}_{d1}+\dot{r}_o + K_{p1}e_1)
 \]
 \subsection[Task 2]{Desired link orientation}
-About Cartesian orientation, we want to keep the third link axis vertical, hence we need to attach a vector $p_l$ to this axis:
+About the desired link orientation, we want to keep the third link axis vertical, hence we need to attach a vector $p_l$ to this axis:
 \[
 p_l = p_5(q) - p_4(q) \rightarrow p_l(q)
 \]
-Where $p_5(q)$ and $p_4(q)$ are the 4$^{th}$ and 5$^{th}$ DH reference frames' origin.
+Where $p_5(q)$ and $p_4(q)$ are the 5$^{th}$ and 4$^{th}$ DH reference frames' origin.
 
-We are interested in keeping the elevation, $\phi$, of this link vertical. Transforming $p_l(q)$'s coordinates from Cartesian to spherical, we can express this second task as:
+To study the orientation of this vector we must transform it into spherical coordinates, where its elevation, $\phi$, is described by:
 \[
-r_2 = \phi(q) = \text{arccos}(\frac{p_{l,z}(q)}{\norm{p_l(q)}})
+\phi(q) = \mathit{arccos}(\frac{p_{l,z}(q)}{\norm{p_l(q)}})
 \]
-Using $d_l(q) = \frac{p_{l,z}(q)}{\norm{p_l(q)}}$, we can more practically compute its associated Jacobian as:
+Where $p_{l,z}(q)$ is the \textit{z} component of the vector. Using $d_l(q) = \frac{p_{l,z}(q)}{\norm{p_l(q)}}$, we can more practically compute its associated Jacobian as:
 \begin{equation}
-J_2 = \diff{\text{arccos}(d_l)}{d_l}\diff{d_l}{q}\dot{q}
+\label{GeneralJacobian2}
+J_2 = \diff{\mathit{arccos}(d_l)}{d_l}\diff{d_l}{q}
 \end{equation}
-%And, computing each block independently we get that:
-%\begin{align}
-%\diff{\phi}{p} &= \frac{-1}{\sqrt{1-p^2}}\\
-%\diff{p}{q} &= \frac{p_{l,z}(q)^{'}\norm{p_l(q)} - p_{l,z}(q)\norm{p_l(q)}^{'}}{\norm{p_l(q)}^2} \nonumber \\
-%&= (\frac{\hat{z}^T\norm{p_l(q)}^2 - p_{l,z}(q)p_l(q)^T}{\norm{p_l(q)}^3})\begin{bmatrix}
-%J_5 - J_4
-%\end{bmatrix}
-%\end{align}
-%Where we know that $p_{l,z}(q)^{'}$ and $\norm{p_{l}(q)}^{'}$ are defined as below, using $\hat{z}^T = \begin{bmatrix}
-%0&0&1
-%\end{bmatrix}$.
-%\begin{align*}
-%p_{l,z}(q)^{'}&= \diff{p_{l,z}(q)}{q} = \hat{z}^T\begin{bmatrix}
-%J_5 - J_4
-%\end{bmatrix} \\
-%\norm{p_l(q)}^{'}&=\diff{(\norm{p_l(q)})}{q}= \frac{p_{l,z}(q)p_l(q)^T}{\norm{p_l(q)}}\begin{bmatrix}
-%J_5-J_4
-%\end{bmatrix}
-%\end{align*}
+And if we compute each derivative independently we get (dropping dependencies for sake of simplicity):
+\[
+\begin{cases}
+\diff{\mathit{arccos}(d_l)}{d_l} = \frac{-1}{\sqrt{1-d_l^2}}\\
+\diff{d_l}{q} = \frac{{p_{l,z}}^{'}\norm{p_l} - p_{l,z}\norm{p_l}^{'}}{\norm{p_l}^2}\\
+{p_{l,z}}^{'} = \diff{p_{l,z}}{q} = \hat{z}^T\begin{bmatrix}
+J_{5,j} - J_{4,j}
+\end{bmatrix} \\
+\norm{p_l}^{'} = \diff{(\norm{p_l})}{q}= \frac{p_l^T}{\norm{p_l}}\begin{bmatrix}
+J_{5,j}-J_{4,j}
+\end{bmatrix}
+\end{cases}
+\]
+With all the information above it is trivial to verify that the expression for the second task's Jacobian, as already expressed by \eqref{GeneralJacobian2} is:
+\begin{equation}
+J_2 = (\frac{\hat{z}^T\norm{p_l(q)}^2 - p_{l,z}(q)p_l(q)^T}{\norm{p_l(q)}^3})\begin{bmatrix}
+J_{5,j} - J_{4,j}
+\end{bmatrix}
+\end{equation}
+Here we used $\hat{z}^T = \begin{bmatrix} 0&0&1\end{bmatrix}^T$ and the matrices $J_{5,j}$ and $J_{4,j}$ as the Jacobians associated with $p_5(q)$ and $p_4(q)$.
 
 
+We can now define the reference for the second task, which is keeping the third axis vertical hence it will be a constant reference and we will try to solve a regulation problem where $r_{d2} = 0$ is the desired elevation. Using $e_2 = r_{d2} - \phi$ as the second task's error, we can find the desired joint velocity executing this task as:
+\begin{equation}
+\dot{q} = J_2^{\#}(\dot{r}_{d2} + K_{p2}e_2)=J_2^{\#}K_{p2}e_2
+\end{equation}
 \subsection[Tasks 3 \& 4]{Control points' collision avoidance}
 When dealing with the collision avoidance task linked to the two control points we were left with only 2 DOFs for both so we had to use one for each point. We couldn't use the same approach we used for the end-effector but at the same time something rather similar has to be done. 
 
