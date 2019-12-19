@@ -267,31 +267,13 @@ We can now define the reference for the second task, which is keeping the third 
 \dot{q} = J_2^{\#}(\dot{r}_{d2} + K_{p2}e_2)=J_2^{\#}K_{p2}e_2
 \end{equation}
 \subsection[Tasks 3 \& 4]{Control points' collision avoidance}
-When dealing with the collision avoidance task linked to the two control points we were left with only 2 DOFs for both so we had to use one for each point. We couldn't use the same approach we used for the end-effector but at the same time something rather similar has to be done. 
-
-To compress the three DOFs into one, we projected the collision avoidance task velocity, $\mathbf{\dot{r_{o}}_{,i}}$ computed as in \eqref{repulsive_dir} but using the control point position $P_c$ as $P$, onto the direction of the velocity itself. In this way we get a task velocity which is a scalar (1 DOF) equal to the magnitude of the original one (i.e. \eqref{repulsive_mag}).
-
-Defining 
-\begin{itemize}
-	\item $\eta = \frac{P_c - O}{\norm{P_c-O}}$
-	\item $P_c$ as the control point's position
-	\item $O$ as the position of the obstacle
-	\item $J_i$ as the analytical jacobian associated to the $i^{th}$ control point
-\end{itemize}
-we end up with:
-\begin{equation*}
-\eta^T\dot{r_{o}}_{,i} = v(P_c,O) =\eta^T J_i\dot{q} = J_{c,i}\dot{q}
-\end{equation*}
-Hence:
-\begin{equation}
-v(P_c,O) = J_{c,i}\dot{q} \rightarrow \dot{q} = J_{c,i}^{\#}v(P_c,O)
-\end{equation}
+Once we handled the first 2 tasks we are left with 3 unused DOF, which has to be exploited to achieve collision avoidance for the whole kinematic structure. In this framework we will position a certain amount of control points along the structure so that if collision avoidance is satisfied for those points, it is also satisfied for the whole body.
 
 \subsubsection{Points' positioning}
 
 For this particular manipulator we chose 3 control points:
 \begin{enumerate}
-\item The first is on the tip of the end-effector.
+\item The first is on the tip of the end-effector (for which we already took care of collision avoidance).
 \item The second is on the origin of the DH frame associated to the 4$^{th}$ joint (i.e. on the "elbow").
 \item The third is on the second link axis at a given distance from the origin of the DH reference frame associated to the 2$^{nd}$ joint (i.e. half link axis' length off the shoulder). In that reference frame, its position is:
 \[c_{pt,3} = \begin{bmatrix}
@@ -301,6 +283,29 @@ For this particular manipulator we chose 3 control points:
 \end{bmatrix}
 \]
 \end{enumerate}
+
+\subsubsection{Collision avoidance}
+
+The control law we want to implement is the same we used for the end-effector, but since that solution refers to a task which is 3 dimensional, we have to find a way to reduce it to a mono-dimensional task.
+
+An idea is to project the collision avoidance task velocity, $\mathbf{\dot{r_{o}}}$ computed as in \eqref{repulsive_dir} but using the control point position $P_c$ as $P$, onto the direction of the distance itself. In this way we get a task velocity which is a scalar (1 DOF) equal to the magnitude of the original one (i.e. \eqref{repulsive_mag}).
+
+Defining 
+\begin{itemize}
+	\item $\eta = \frac{P_c - O}{\norm{P_c-O}}$
+	\item $P_c$ as the control point's position
+	\item $O$ as the position of the obstacle
+	\item $J_i$ as the analytical jacobian associated to the $i^{th}$ control point
+\end{itemize}
+we end up with: \todo everything else
+\begin{equation*}
+\eta^T\dot{r_{o}}_{,i} = v(P_c,O) =\eta^T J_i\dot{q} = J_{c,i}\dot{q}
+\end{equation*}
+Hence:
+\begin{equation}
+v(P_c,O) = J_{c,i}\dot{q} \rightarrow \dot{q} = J_{c,i}^{\#}v(P_c,O)
+\end{equation}
+
 %\section{Priority resolution algorithm}
 %Due to the high complexity of the task we divided our control scheme into 3 main blocks:
 %\begin{enumerate}
