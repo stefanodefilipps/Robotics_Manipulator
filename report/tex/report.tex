@@ -55,7 +55,11 @@ We will first introduce the instrument on which this project is based, the \text
 \section{Priority matrix}
 \subsection{Redundancy Resolution Problem}
 The redundancy resolution problem consists in finding the robot command in order to execute a series of tasks, usually organized in a Stack of Task.
-More generally, considering $k$ a generic task, the problem can be formalized through an equality relation \[A_kx=b_k\]
+More generally, considering $k$ a generic task, the problem can be formalized through an equality relation 
+\begin{equation}
+\label{stefano:1}
+A_kx=b_k
+\end{equation}
 with the matrix $A_k \in \R^{mk \times n}$, and the vector $b \in \R^{mk}$. $n$ is the Degree of Freedom (DoF) of the system, and $mk$ is the task dimension ($mk \geq n$). The solution $x \in \Bbb R^n$ represents the robot motion for accomplishing the task.
 Taking into account a SoT, instead, the transformation matrix and task vector can be simply defined by doing:
 \[A=\begin{bmatrix}
@@ -89,20 +93,26 @@ Taking into account a SoT composed by l tasks, the non prioritized solution is o
 \overline{x} = A^\#b\]
 If all the tasks are linearly independent, then they do not conflict with each other and they will be correctly executed by computing a solution which is equal to the one computed by the Siciliano algorithm. Otherwise conflicting tasks need to be accommodated.
 An important aspect of the base solution, though, is that the contribution of each task and the task null space, can be easily extrapolated from $A^\#$, and this information can be useful when tasks need to be reordered or for other purposes. On the other hand, all this knowledge is lost in the Siciliano solution due to the projection of a task in the null space of a linearly depended higher priority task. 
-So, in order to gain all these information while still imposing the correct task priority we need to find a matrix \textbf{F} that is able to enforce the task priority, such that the solution computed as: \[x = A^\#Fb\]
+So, in order to gain all these information while still imposing the correct task priority we need to find a matrix \textbf{F} that is able to enforce the task priority, such that the solution computed as: 
+\begin{equation}
+\label{stefano:2}
+x = A^\#Fb
+\end{equation}
 will be the same as the solution of the Siciliano algorithm.
 \textbf{F} will be called the task priority matrix and from the equation is visible that this approach is effectively able to separate the redundancy resolution step from the imposition of the priority order, making it simpler to gain information of the task state and reorder the tasks at each iteration.
 \paragraph{\textit{Rank 1 Case Study:}}
 In order to understand how \textbf{F} can be chosen and have an insight about the knowledge that can be extrapolated from $A^\#$  we will report a simple example involving rank-1 tasks (mono dimensional tasks).
 Suppose we have a SoT composed by two rank-1 linearly dependent tasks $a_1x = b_1$ and $a_2x = b_2$ . Namely, $a_2 = da_1$ , with $d \in \R$.
-The solution obtained by the Siciliano algorithm is:\[
+The solution obtained by the Siciliano algorithm is:
+\begin{equation}
+\label{stefano:3}
 x=\begin{bmatrix}
 a_1^\# & 0 
 \end{bmatrix}
 \begin{pmatrix}
 b_1 \\ b_2
 \end{pmatrix}
-\]
+\end{equation}
 which is equivalent to $x = a_1^\#b_1$ and therefore I can see only the contribution of the first task in the solution while the second task’s is lost.
 On the other hand, if we compute the solution without priority we obtain.
 \[
@@ -121,7 +131,7 @@ b_1 \\ b_2
 \end{pmatrix}
 \]
 where now is evident the contribution of both tasks in the computation of the solution.
-Now we need to define a matrix \textbf{F}  such that the 2 solutions given by (2) and (3) are the same and this can be done by choosing the matrix as:
+Now we need to define a matrix \textbf{F}  such that the 2 solutions given by \eqref{stefano:2} and \eqref{stefano:3} are the same and this can be done by choosing the matrix as:
 \[
 F = \begin{bmatrix}
 1 & 0 \\ d & 0
@@ -133,7 +143,7 @@ x =
 \begin{bmatrix}
 a_1 \\ a_2
 \end{bmatrix}^\#F
-\begin{pmatrix}
+\begin{pmatrix}(1)
 b_1 \\ b_2
 \end{pmatrix}
 =\begin{bmatrix}
@@ -162,7 +172,7 @@ the task.
 
 From now on we will refer to the general case and therefore we are going to develop a tool similar to the rref in order to obtain the Task Priority Matrix.
 First is useful to use the QR decomposition of the augmented matrix \textbf{A} to compute its pseudoinverse.
-\[
+\[(3)
 A^T = Q\begin{bmatrix}
 R\\0
 \end{bmatrix}
@@ -281,7 +291,7 @@ For this particular manipulator we chose 3 control points:
 \end{bmatrix} = \begin{bmatrix}
 0\\0\\ 0.2
 \end{bmatrix}
-\]
+\] where $d_1$ is given in the DH table.
 \end{enumerate}
 
 \subsubsection{Collision avoidance}
@@ -297,9 +307,9 @@ Defining
 	\item $O$ as the position of the obstacle
 	\item $J_i$ as the analytical jacobian associated to the $i^{th}$ control point
 \end{itemize}
-we end up with: \todo everything else
+we end up with:
 \begin{equation*}
-\eta^T\dot{r_{o}}_{,i} = v(P_c,O) =\eta^T J_i\dot{q} = J_{c,i}\dot{q}
+\eta^T\dot{r_{o}} = v(P_c,O) =\eta^T J_i\dot{q} = J_{c,i}\dot{q}
 \end{equation*}
 Hence:
 \begin{equation}
