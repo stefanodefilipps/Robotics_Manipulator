@@ -2,7 +2,7 @@ clear all
 close all
 clc
 
-mainDir = '/home/marco/Scrivania/ROB2_project';
+mainDir = '/home/marco/Scrivania/ROB2';
 raw = '/Results/3obs';
 plotDir = '/report/tex/plots/3obs';
 
