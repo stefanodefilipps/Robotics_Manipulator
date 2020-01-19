@@ -82,7 +82,7 @@ pause(0.001)
 for k=nPlots:-1:1
     figure(k);
     pause;
-    print(titles{k},'-depsc');
+    print(Titles{k},'-depsc');
     pause(0.001);
     close(figure(k));
 end
