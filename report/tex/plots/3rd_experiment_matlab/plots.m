@@ -2,7 +2,7 @@ clear all
 close all
 clc
 
-mainDir = '/home/marco/Scrivania/ROB2';
+mainDir = '/home/marco/Scrivania/ROB2_project';
 raw = '/Results/3obs';
 plotDir = '/report/tex/plots/3obs';
 
@@ -19,6 +19,8 @@ boolVal = isempty(switching);
 if(~boolVal) 
     switching = switching(:,1);
 end
+d = 0.4;
+D = 0.2;
 for i = 1:nPlots
    data = readmatrix(strcat(mainDir,raw,'/',files{i}));
    y_max = max(max(data));
@@ -37,10 +39,10 @@ for i = 1:nPlots
    end
    % | will plot the reference values from the surface of the obstacle |
    % v                                                                 v
-   %if(i <= 3)
-   %    plot([t(1),t(end)],[d,d],'.-g');
-   %    plot([t(1),t(end)],[D,D],'.-r');
-   %end
+   if(i <= 3)
+      plot([t(1),t(end)],[d,d],'.-g');
+      plot([t(1),t(end)],[D,D],'.-r');
+   end
    title(titles{i});
    %axis([0,row_data,y_min*0.8,y_max*1.2])
    grid on;
@@ -90,5 +92,5 @@ for k=nPlots:-1:1
 end
 
 for file=1:nPlots
-    movefile([titles{file},'.eps'],[mainDir,plotDir])
+    movefile([Titles{file},'.eps'],[mainDir,plotDir])
 end

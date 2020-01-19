@@ -16,8 +16,8 @@ switching = switching(:,1);
 T = 0.005;
 t = linspace(1,344,344)*T;
 
-% d = ;
-% D = ;
+d = 0.4;
+D = 0.2;
 boolVal = isempty(switching);
 if(~boolVal) 
     switching = switching(:,1);
@@ -40,10 +40,10 @@ for i = 1:nPlots
    end
    % | will plot the reference values from the surface of the obstacle |
    % v                                                                 v
-   %if(i <= 2)
-   %    plot([t(1),t(end)],[d,d],'.-g');
-   %    plot([t(1),t(end)],[D,D],'.-r');
-   %end
+   if(i <= 2)
+      plot([t(1),t(end)],[d,d],'.-g');
+      plot([t(1),t(end)],[D,D],'.-r');
+   end
    title(titles{i});
    %axis([0,row_data,y_min*0.8,y_max*1.2])
    grid on;
@@ -88,5 +88,5 @@ for k=nPlots:-1:1
 end
 
 for file=1:nPlots
-    movefile([titles{file},'.eps'],[mainDir,plotDir])
+    movefile([Titles{file},'.eps'],[mainDir,plotDir])
 end

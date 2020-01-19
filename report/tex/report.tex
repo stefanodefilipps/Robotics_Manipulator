@@ -13,7 +13,7 @@
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\norm}[1]{\parallel{#1}\parallel}
 \newcommand{\img}[4]{\includegraphics[scale={#4}]{./plots/#1/#2/#3}}
-\newcommand{\img2}[3]{\includegraphics[scale={#3}]{./plots/#1/#2}}
+\newcommand{\imgG}[3]{\includegraphics[scale={#3}]{./plots/#1/#2}}
 
 \newcommand{\tablePlot}[3][.3]{\begin{figure}[H]
 \subfloat[obstacle: \textbf{far}, control points always active]{\img{far}{always}{#2}{#1}}\hfill
@@ -430,27 +430,31 @@ An interesting fact is that in this case, our problem might seem more difficult 
 
 \tablePlot[.33]{ee_task_error}{ee task error for the above cases:}
 \tablePlot{elbow_task_error}{Elbow task error for the above cases:}
-\subsection{Cluttered environment: \textit{2 obstacles}}
+\subsection{Cluttered environment.}
 \begin{figure}[H]
 \centering
-\includegraphics[scale=.3]{./plots/2_obst.png}
-\caption{Cluttered environments: 2 obstacles}
-\end{figure}
-\begin{figure}[H]
-\subfloat[Control points' distances from $1^{st}$ obstacle]{\img2{2obs}{control_points_distances.eps}{.5}}\hfill
-\subfloat[Control points' distances from $2^{nd}$ obstacle]{\img2{2obs}{control_points_distances 2.eps}{.5}}
+\subfloat[2 obstacles]{\includegraphics[scale=.2]{./plots/2_obst.png}}\hfill
+\subfloat[3 obstacles]{\includegraphics[scale=.2]{./plots/3_obst.png}}
+\caption{Cluttered environments: 2 \& 3 obstacles}
 \end{figure}
 
-\subsection{Cluttered environment: \textit{3 obstacles}}
+From these 2 simulation it is clear how this controller manages to keep the minimum distance among all the obstacles within an acceptable range. As a matter of facts, it rarely drops below the dangerous value.
+
 \begin{figure}[H]
-\centering
-\includegraphics[scale=.3]{./plots/3_obst.png}
-\caption{Cluttered environments: 3 obstacles}
+\label{2obstDist}
+\subfloat[Control points' distances from $1^{st}$ obstacle]{\imgG{2obs}{control_points_distances.eps}{.33}}\hfill
+\subfloat[Control points' distances from $2^{nd}$ obstacle]{\imgG{2obs}{control_points_distances_2.eps}{.33}}\hfill
+\subfloat[Minimum distance among all the obstacle]{\imgG{2obs}{min_2.eps}{.33}}
+\caption{2 obstacles case}
 \end{figure}
+
 \begin{figure}[H]
-\subfloat[Control points' distances from $1^{st}$ obstacle]{\img2{3obs}{control_points_distances.eps}{.3}}\hfill
-\subfloat[Control points' distances from $2^{nd}$ obstacle]{\img2{3obs}{control_points_distances_2.eps}{.3}}\hfill
-\subfloat[Control points' distances from $3^{rd}$ obstacle]{\img2{3obs}{control_points_distances_3.eps}{.3}}
+\label{3obstDist}
+\subfloat[Control points' distances from $1^{st}$ obstacle]{\imgG{3obs}{control_points_distances.eps}{.5}}\hfill
+\subfloat[Control points' distances from $2^{nd}$ obstacle]{\imgG{3obs}{control_points_distances_2.eps}{.5}}\\
+\subfloat[Control points' distances from $3^{rd}$ obstacle]{\imgG{3obs}{control_points_distances_3.eps}{.5}}\hfill
+\subfloat[Minimum distance among all the obstacle]{\imgG{3obs}{min_3.eps}{.5}}
+\caption{3 obstacles case}
 \end{figure}
 
 \section{Conclusion}
