@@ -15,6 +15,9 @@ switching = switching(:,1);
 
 T = 0.005;
 t = linspace(1,344,344)*T;
+
+% d = ;
+% D = ;
 boolVal = isempty(switching);
 if(~boolVal) 
     switching = switching(:,1);
@@ -35,6 +38,12 @@ for i = 1:nPlots
        plot(T*[switching(j),switching(j)],[y_max*1.2,y_min*0.8],'Color',[0 0 0]+0.60,'LineWidth',.5);
        end
    end
+   % | will plot the reference values from the surface of the obstacle |
+   % v                                                                 v
+   %if(i <= 2)
+   %    plot([t(1),t(end)],[d,d],'.-g');
+   %    plot([t(1),t(end)],[D,D],'.-r');
+   %end
    title(titles{i});
    %axis([0,row_data,y_min*0.8,y_max*1.2])
    grid on;
