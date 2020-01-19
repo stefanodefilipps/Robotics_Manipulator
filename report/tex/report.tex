@@ -13,6 +13,7 @@
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\norm}[1]{\parallel{#1}\parallel}
 \newcommand{\img}[4]{\includegraphics[scale={#4}]{./plots/#1/#2/#3}}
+\newcommand{\imgG}[3]{\includegraphics[scale={#3}]{./plots/#1/#2}}
 
 \newcommand{\tablePlot}[3][.3]{\begin{figure}[H]
 \subfloat[obstacle: \textbf{far}, control points always active]{\img{far}{always}{#2}{#1}}\hfill
@@ -26,14 +27,18 @@
 
 \begin{document}
 	
-	\title{Task priority assignment with collision avoidance.}
+	\title{Task Priority Matrix method with collision avoidance}
 	\author{Stefano De Filippis \& Marco Menchetti}
 	\date{October 2019}
 	\maketitle
 	
+	\newpage
+	\tableofcontents
+	\newpage
+	
 \begin{abstract}
 	\textbf{
-	In this paper we will face the problem of task priority resolution using a fast computation of the priority matrix (here \textit{Flacco Matrix}) and the resulting joint velocities.}
+	In this project we will face the problem of task priority resolution using a fast computation of the priority matrix (here \textit{Flacco Matrix}) and the resulting joint velocities.}
 
 \textbf{
 	Collision avoidance for several control points has been taken as a high priority task in this case as well as trajectory tracking.}
@@ -46,119 +51,16 @@ Due to their high dexterity and the absence of non-holonomic constraints, manipu
 
 A handy yet practical example is the one considered below: a manipulator moving in a cluttered environment, trying to complete a trajectory tracking task and, at the same time, avoid collision with obstacles nearby.
 
-\section{Tasks definition}
-The tasks we used are four and they occupy 6 out of 7 manipulator's DOF:
-\begin{itemize}
-	\item one cartesian positioning task occupying 3 DOF.
-	\item one cartesian orientation task for the third link axis, which occupies 1 DOF.
-	\item two control points' collision avoidance tasks that will occupy overall 2 DOF.
-\end{itemize}
-\subsection[Task 1]{cartesian positioning}
-The cartesian positioning task is defined by the direct kinematics of the robot, $f(q)$, so the \textbf{end-effector}'s position is $r = f(q)$. Hence it's straight-forward the expression of this task's velocity with respect to the joints' one: 
-\begin{equation}
-\label{EQN: task1}
- \dot{r} = \diff{f(q)}{q} \dot{q} = J\dot{q}
-\end{equation}
+We will first introduce the instrument on which this project is based, the \textbf{Task Priority Matrix} and then there will be a presentation of the tasks we want to execute and the algorithm we used to set their priority. At the end, there will be a discussion of the results acquired from different simulation set up in different conditions (i.e. different kind of paths, point-to-point motion and multi-obstacle).
 
-\subsubsection{Collision avoidance}
-In the formulation of our problem, where $\dot{r}$ is given (i.e. precalculated), we are left with finding the right value for $\dot{q}$.
-
-As already said, in our approach, we have also to include the collision avoidance for the end-effector. Instead of treating it as a different task, as we will do for the other control points, we could handle it in a "tricky" way so as to not saturate other DOFs: we will use instead of $\dot{r}$, the \textbf{sum} between $\dot{r}$ and another cartesian velocity, $\dot{r_o}$, pushing the end-effector away from the obstacle. This cartesian velocity will be directed as the distance from the center of the obstacle to the tip of the manipulator, and will have a magnitude weighted by a non-linear gain $v(P,O)$, where $P = f(q)$ is the end-effector position and $O$ is the obstacle position.
-Hence:
-\begin{equation}\label{repulsive_dir}
-\dot{r_o} = v(P,O)\frac{f(q) - O}{\lVert f(q) - O \rVert}
-\end{equation}
-\begin{equation}\label{repulsive_mag}
-v(P,O) = \frac{V_{max}}{1+e^{(\lVert f(q) -O \rVert(2/\rho)-1)\alpha}}
-\end{equation}
-
-In the end we will have \eqref{EQN: task1} in the form: 
-\[
-\dot{r} + \dot{r_o} = J\dot{q}
-\]
-\subsection[Task 2]{Cartesian orientation}
-About cartesian orientation, we want to keep the third link axis vertical, hence we need to attach a vector $p_l$ to this axis:
-\[
-p_l = p_5(q) - p_4(q) \rightarrow p_l(q)
-\]
-We are interested in keeping the elevation of this one vertical, which in spherical coordinates coincides with saying $\phi(q) = 0$, where:
-\begin{gather*}
-\phi(q) = \texttt{arccos}(p(q))\\
-p(q) = \frac{p_{l,z}(q)}{\norm{p_l(q)}}
-\end{gather*}
-Whose associated jacobian is :
-\begin{equation}
-\dot{\phi} = \diff{\phi}{p}\diff{p}{q}\dot{q}
-\end{equation}
-And, computing each block independently we get that:
-\begin{align}
-\diff{\phi}{p} &= \frac{-1}{\sqrt{1-p^2}}\\
-\diff{p}{q} &= \frac{p_{l,z}(q)^{'}\norm{p_l(q)} - p_{l,z}(q)\norm{p_l(q)}^{'}}{\norm{p_l(q)}^2} \nonumber \\
-&= (\frac{\hat{z}^T\norm{p_l(q)}^2 - p_{l,z}(q)p_l(q)^T}{\norm{p_l(q)}^3})\begin{bmatrix}
-J_5 - J_4
-\end{bmatrix}
-\end{align}
-Where we know that $p_{l,z}(q)^{'}$ and $\norm{p_{l}(q)}^{'}$ are defined as below, using $\hat{z}^T = \begin{bmatrix}
-0&0&1
-\end{bmatrix}$.
-\begin{align*}
-p_{l,z}(q)^{'}&= \diff{p_{l,z}(q)}{q} = \hat{z}^T\begin{bmatrix}
-J_5 - J_4
-\end{bmatrix} \\
-\norm{p_l(q)}^{'}&=\diff{(\norm{p_l(q)})}{q}= \frac{p_{l,z}(q)p_l(q)^T}{\norm{p_l(q)}}\begin{bmatrix}
-J_5-J_4
-\end{bmatrix}
-\end{align*}
-
-
-\subsection[Tasks 3 \& 4]{Control points' collision avoidance}
-When dealing with the collision avoidance task linked to the two control points we were left with only 2 DOFs for both so we had to use one for each point. We couldn't use the same approach we used for the end-effector but at the same time something rather similar has to be done. 
-
-To compress the three DOFs into one, we projected the collision avoidance task velocity, $\mathbf{\dot{r_{o}}_{,i}}$ computed as in \eqref{repulsive_dir} but using the control point position as $P$, onto the direction of the velocity itself. In this way we get a task velocity which is a scalar (1 DOF) equal to the magnitude of the original one (i.e. \eqref{repulsive_mag}).
-
-Defining 
-\begin{itemize}
-	\item $\eta = \frac{P - O}{\lVert P-O \rVert}$
-	\item $P$ as the control point's position
-	\item $O$ as the position of the obstacle
-	\item $J_i$ as the analytical jacobian associated to the $i$-th control point
-\end{itemize}
-we end up with:
-\begin{equation*}
-\eta^T\dot{r_{o}}_{,i} = v(P,O) =\eta^T J_i\dot{q} = J_{c,i}\dot{q}
-\end{equation*}
-Hence:
-\begin{equation}
-v(P,O) = J_{c,i}\dot{q}
-\end{equation}
-
-\subsubsection{Points' positioning}
-
-For this particular manipulator we chose 3 control points:
-\begin{enumerate}
-\item The first is on the tip of the end-effector.
-\item The second is on the origin of the DH frame associated to the 4$^{th}$ joint (i.e. on the "elbow").
-\item The third is on the second link axis at a given distance from the origin of the DH reference frame associated to the 2$^{nd}$ joint (i.e. half link axis' length off the shoulder). In that reference frame, its position is:
-\[c_{pt,3} = \begin{bmatrix}
-0\\0\\ \frac{d_1}{2}
-\end{bmatrix} = \begin{bmatrix}
-0\\0\\ 0.2
-\end{bmatrix}
-\]
-\end{enumerate}
-\section{Control architecture}
-Due to the high complexity of the task we divided our control scheme into 3 main blocks:
-\begin{enumerate}
-	\item \textbf{Priority matrix:} to compute in a fast way the joint velocities executing the task ones, coming from the prioritized stack of tasks.
-	\item \textbf{Priority resolution algorithm:} to organize the stack of tasks accordingly to each ones' \textit{generalized cost}.
-	This concept will be further explained above.
-	\item \textbf{Control algorithm:} to merge both the above methods and generate an optimal joint velocity.
-\end{enumerate}
-
-\subsection{Priority matrix}
-\subsubsection{Redundancy Resolution Problem}
+\section{Priority matrix}
+\subsection{Redundancy Resolution Problem}
 The redundancy resolution problem consists in finding the robot command in order to execute a series of tasks, usually organized in a Stack of Task.
-More generally, considering $k$ a generic task, the problem can be formalized through an equality relation \[A_kx=b_k\]
+More generally, considering $k$ a generic task, the problem can be formalized through an equality relation 
+\begin{equation}
+\label{stefano:1}
+A_kx=b_k
+\end{equation}
 with the matrix $A_k \in \R^{mk \times n}$, and the vector $b \in \R^{mk}$. $n$ is the Degree of Freedom (DoF) of the system, and $mk$ is the task dimension ($mk \geq n$). The solution $x \in \Bbb R^n$ represents the robot motion for accomplishing the task.
 Taking into account a SoT, instead, the transformation matrix and task vector can be simply defined by doing:
 \[A=\begin{bmatrix}
@@ -174,7 +76,7 @@ b_1^T & b_2^T & \dots & b_l^T
 Where matrix \textbf{A} has dimension $\sum_{k=1}^l m_k \times n$, and vector \textbf{b} has dimension $\sum_{k=1}^l m_k \leq n$.
 And the problem can be formalized through an equality relation: \[Ax = b\]
 
-\subsubsection{The Siciliano And Slotine Solution}
+\subsection{The Siciliano And Slotine Solution}
 
 If more than one task needs to be executed at the same time, though, we need to define a certain priority of execution between them. One way to handle the priority is  to consider it as a strict execution order between tasks. A second approach, though, consists in handling the priority as a weight for the cost function that the solver has to minimize.
 The most used solution to solve the redundancy resolution problem is obtained by projecting a task in the null space of higher priority task, as proposed by Siciliano and Slotine (1991). Starting with $P_0 = I$ (the $n \times n$ Identity matrix) and $x_0 = 0$ (the $n \times 1$ zero vector), the contribution of each task, from the highest priority task $k = 1$ to the lowest priority task $k = l$, is computed as:
@@ -185,27 +87,33 @@ P_k = P_{k-1}-(A_kP_{k-1})^{\#}A_kP_{k-1}
 \]
 is the projector in the null space of the all tasks from 1 to $k$.
 With the development of this project, instead, we were able to investigate a different redundancy resolution methodology presented by Flacco. This approach is fast thanks to recent technologies and moreover presents interesting properties that allows us to have a little more insights and control about the stack of tasks due to the separation of the redundancy resolution from the assignment of the correct priority order. 
-\subsubsection{The Task Priority Matrix}
+\subsection{The Task Priority Matrix}
 
 Taking into account a SoT composed by l tasks, the non prioritized solution is obtained by inverting the augmented task:
 \[
 \overline{x} = A^\#b\]
 If all the tasks are linearly independent, then they do not conflict with each other and they will be correctly executed by computing a solution which is equal to the one computed by the Siciliano algorithm. Otherwise conflicting tasks need to be accommodated.
 An important aspect of the base solution, though, is that the contribution of each task and the task null space, can be easily extrapolated from $A^\#$, and this information can be useful when tasks need to be reordered or for other purposes. On the other hand, all this knowledge is lost in the Siciliano solution due to the projection of a task in the null space of a linearly depended higher priority task. 
-So, in order to gain all these information while still imposing the correct task priority we need to find a matrix \textbf{F} that is able to enforce the task priority, such that the solution computed as: \[x = A^\#Fb\]
+So, in order to gain all these information while still imposing the correct task priority we need to find a matrix \textbf{F} that is able to enforce the task priority, such that the solution computed as: 
+\begin{equation}
+\label{stefano:2}
+x = A^\#Fb
+\end{equation}
 will be the same as the solution of the Siciliano algorithm.
 \textbf{F} will be called the task priority matrix and from the equation is visible that this approach is effectively able to separate the redundancy resolution step from the imposition of the priority order, making it simpler to gain information of the task state and reorder the tasks at each iteration.
 \paragraph{\textit{Rank 1 Case Study:}}
 In order to understand how \textbf{F} can be chosen and have an insight about the knowledge that can be extrapolated from $A^\#$  we will report a simple example involving rank-1 tasks (mono dimensional tasks).
 Suppose we have a SoT composed by two rank-1 linearly dependent tasks $a_1x = b_1$ and $a_2x = b_2$ . Namely, $a_2 = da_1$ , with $d \in \R$.
-The solution obtained by the Siciliano algorithm is:\[
+The solution obtained by the Siciliano algorithm is:
+\begin{equation}
+\label{stefano:3}
 x=\begin{bmatrix}
 a_1^\# & 0 
 \end{bmatrix}
 \begin{pmatrix}
 b_1 \\ b_2
 \end{pmatrix}
-\]
+\end{equation}
 which is equivalent to $x = a_1^\#b_1$ and therefore I can see only the contribution of the first task in the solution while the second task’s is lost.
 On the other hand, if we compute the solution without priority we obtain.
 \[
@@ -224,7 +132,7 @@ b_1 \\ b_2
 \end{pmatrix}
 \]
 where now is evident the contribution of both tasks in the computation of the solution.
-Now we need to define a matrix \textbf{F}  such that the 2 solutions given by (2) and (3) are the same and this can be done by choosing the matrix as:
+Now we need to define a matrix \textbf{F}  such that the 2 solutions given by \eqref{stefano:2} and \eqref{stefano:3} are the same and this can be done by choosing the matrix as:
 \[
 F = \begin{bmatrix}
 1 & 0 \\ d & 0
@@ -288,11 +196,141 @@ From the properties of the QR decomposition, the diagonal blocks $\textbf{R}_{\t
 Since the temporary \textbf{F} matrix is already upper triangular, Gauss Jordan elimination requires 2 steps for each task:
 \begin{itemize}
 \item First we need to set the pivot matrices to the Identity matrix by multiplying each block row with the pseudoinverse of its pivot matrix.
-\item Then, all elements in the column block outside the diagonal should be set to zero. By considering the structure of the temporary matrix, and considering i<j, to nullify a block (i,j) by subtracting to the i-th row block the block (i,j) times the j-th row block. If after the first step the j-th pivot was an Identity matrix, then all elements in the block (i,j) are zeroed.
+\item Then, all elements in the column block outside the diagonal should be set to zero. By considering the structure of the temporary matrix, and considering i$<$j, to nullify a block (i,j) by subtracting to the i-th row block the block (i,j) times the j-th row block. If after the first step the j-th pivot was an Identity matrix, then all elements in the block (i,j) are zeroed.
 \end{itemize}
 When all the steps are made for each task, then in order to get the Task Priority Matrix we will simply need to transpose the last temporary matrix obtained by the algorithm.
-It is important to notice that in the first step just described we required the inverse of the pivot matrix, but since the k-th pivot matrix is only not singular if the k-th task is not singular and linearly independent from the higher order tasks we might not be able to do the inversion. Therefore, instead of the simple inversion we can use the pseudoinverse of the pivot matrix and in a damped version. Doing this we can obtain damped solutions that are better and smoother when we are reaching tasks’ singularities.
-\subsection{Priority resolution algorithm}
+It is important to notice that in the first step just described we required the inverse of the pivot matrix, but since the k-th pivot matrix is only not singular if the k-th task is not singular and linearly independent from the higher order tasks we might not be able to do the inversion. Therefore, instead of the simple inversion we can use the pseudoinverse of the pivot matrix and in a damped version. Doing this we can obtain damped solutions that are better and smoother when we are reaching tasks' singularities.
+
+\section{Tasks definition}
+The tasks we used are four and they occupy 6 out of 7 manipulator's DOF:
+\begin{itemize}
+	\item one Cartesian positioning task occupying 3 DOF.
+	\item one link orientation task for the third link axis, which occupies 1 DOF.
+	\item two control points' collision avoidance tasks that will occupy overall 2 DOF.
+\end{itemize}
+\subsection[Task 1]{Cartesian positioning}
+The end-effector position is defined by the direct kinematics of the robot as:
+\[
+r_{ee} = f(q) \rightarrow \dot{r}_{ee} = \diff{f(q)}{q}\dot{q} = J_1\dot{q}
+\]
+This means that if we define $r_{d1}$ as the desired task velocity for the end effector, and the error as $e_1 = r_{d1} - r_{ee}$, we can find the joint velocity realizing this task with a feedback plus feed-forward control law, whose expression will be given by the following:
+\begin{equation}
+\label{EQN: task1}
+\dot{q} = J_1^{\#}(\dot{r}_{d1} + K_{p1}e_1)
+\end{equation}
+Where $K_{p1}$ is a positive definite gain matrix.
+\subsubsection{Collision avoidance}
+In the formulation of our problem, where $\dot{r}_{d1}$ is given (i.e. precalculated), we have also to include the collision avoidance for the end-effector. 
+
+Instead of treating it as a different task, as we will do for the other control points, we could handle it in a "tricky" way so as to not saturate other DOFs: we will use as a feed-forward term, instead of $\dot{r}_{d1}$, the \textbf{sum} between $\dot{r}_{d1}$ and another Cartesian velocity, $\dot{r_o}$, pushing the end-effector away from the obstacle. This Cartesian velocity will be directed as the distance from the center of the obstacle to the tip of the manipulator, and will have a magnitude weighted by a non-linear gain $v(P,O)$, where $P = f(q)$ is the end-effector position and $O$ is the obstacle position.
+Hence:
+\begin{equation}\label{repulsive_dir}
+\dot{r_o} = v(P,O)\frac{f(q) - O}{\lVert f(q) - O \rVert}
+\end{equation}
+\begin{equation}\label{repulsive_mag}
+v(P,O) = \frac{V_{max}}{1+e^{(\lVert f(q) -O \rVert(2/\rho)-1)\alpha}}
+\end{equation}
+
+In the end we will have \eqref{EQN: task1} in the form: 
+\[
+\dot{q} = J_1^{\#}(\dot{r}_{d1}+\dot{r}_o + K_{p1}e_1)
+\]
+\subsection[Task 2]{Desired link orientation}
+About the desired link orientation, we want to keep the third link axis vertical, hence we need to attach a vector $p_l$ to this axis:
+\[
+p_l = p_5(q) - p_4(q) \rightarrow p_l(q)
+\]
+Where $p_5(q)$ and $p_4(q)$ are the 5$^{th}$ and 4$^{th}$ DH reference frames' origin.
+
+To study the orientation of this vector we must transform it into spherical coordinates, where its elevation, $\phi$, is described by:
+\[
+\phi(q) = \mathit{arccos}(\frac{p_{l,z}(q)}{\norm{p_l(q)}})
+\]
+Where $p_{l,z}(q)$ is the \textit{z} component of the vector. Using $d_l(q) = \frac{p_{l,z}(q)}{\norm{p_l(q)}}$, we can more practically compute its associated Jacobian as:
+\begin{equation}
+\label{GeneralJacobian2}
+J_2 = \diff{\mathit{arccos}(d_l)}{d_l}\diff{d_l}{q}
+\end{equation}
+And if we compute each derivative independently we get (dropping dependencies for sake of simplicity):
+\[
+\begin{cases}
+\diff{\mathit{arccos}(d_l)}{d_l} = \frac{-1}{\sqrt{1-d_l^2}}\\
+\diff{d_l}{q} = \frac{{p_{l,z}}^{'}\norm{p_l} - p_{l,z}\norm{p_l}^{'}}{\norm{p_l}^2}\\
+{p_{l,z}}^{'} = \diff{p_{l,z}}{q} = \hat{z}^T\begin{bmatrix}
+J_{5,j} - J_{4,j}
+\end{bmatrix} \\
+\norm{p_l}^{'} = \diff{(\norm{p_l})}{q}= \frac{p_l^T}{\norm{p_l}}\begin{bmatrix}
+J_{5,j}-J_{4,j}
+\end{bmatrix}
+\end{cases}
+\]
+With all the information above it is trivial to verify that the expression for the second task's Jacobian, as already expressed by \eqref{GeneralJacobian2} is:
+\begin{equation}
+J_2 = (\frac{\hat{z}^T\norm{p_l(q)}^2 - p_{l,z}(q)p_l(q)^T}{\norm{p_l(q)}^3})\begin{bmatrix}
+J_{5,j} - J_{4,j}
+\end{bmatrix}
+\end{equation}
+Here we used $\hat{z}^T = \begin{bmatrix} 0&0&1\end{bmatrix}^T$ and the matrices $J_{5,j}$ and $J_{4,j}$ as the Jacobians associated with $p_5(q)$ and $p_4(q)$.
+
+
+We can now define the reference for the second task, which is keeping the third axis vertical hence it will be a constant reference and we will try to solve a regulation problem where $r_{d2} = 0$ is the desired elevation. Using $e_2 = r_{d2} - \phi$ as the second task's error, we can find the desired joint velocity executing this task as:
+\begin{equation}
+\dot{q} = J_2^{\#}(\dot{r}_{d2} + K_{p2}e_2)=J_2^{\#}K_{p2}e_2
+\end{equation}
+\subsection[Tasks 3 \& 4]{Control points' collision avoidance}
+Once we handled the first 2 tasks we are left with 3 unused DOF, which has to be exploited to achieve collision avoidance for the whole kinematic structure. In this framework we will position a certain amount of control points along the structure so that if collision avoidance is satisfied for those points, it is also satisfied for the whole body.
+
+\subsubsection{Points' positioning}
+
+For this particular manipulator we chose 3 control points:
+\begin{enumerate}
+\item The first is on the tip of the end-effector (for which we already took care of collision avoidance).
+\item The second is on the origin of the DH frame associated to the 4$^{th}$ joint (i.e. on the "elbow").
+\item The third is on the second link axis at a given distance from the origin of the DH reference frame associated to the 2$^{nd}$ joint (i.e. half link axis' length off the shoulder). In that reference frame, its position is:
+\[c_{pt,3} = \begin{bmatrix}
+0\\0\\ \frac{d_1}{2}
+\end{bmatrix} = \begin{bmatrix}
+0\\0\\ 0.2
+\end{bmatrix}
+\] where $d_1$ is given in the DH table.
+\end{enumerate}
+\begin{figure}[H]
+\centering
+\includegraphics[scale=.3]{./plots/KUKA_CPS.png}
+\caption{Control points' positions.}
+\end{figure}
+\subsubsection{Collision avoidance}
+
+The control law we want to implement is the same we used for the end-effector, but since that solution refers to a task which is 3 dimensional, we have to find a way to reduce it to a mono-dimensional task.
+
+An idea is to project the collision avoidance task velocity, $\mathbf{\dot{r_{o}}}$ computed as in \eqref{repulsive_dir} but using the control point position $P_c$ as $P$, onto the direction of the distance itself. In this way we get a task velocity which is a scalar (1 DOF) equal to the magnitude of the original one (i.e. \eqref{repulsive_mag}).
+
+Defining 
+\begin{itemize}
+	\item $\eta = \frac{P_c - O}{\norm{P_c-O}}$
+	\item $P_c$ as the control point's position
+	\item $O$ as the position of the obstacle
+	\item $J_i$ as the analytical jacobian associated to the $i^{th}$ control point
+\end{itemize}
+we end up with:
+\begin{equation*}
+\eta^T\dot{r_{o}} = v(P_c,O) =\eta^T J_i\dot{q} = J_{c,i}\dot{q}
+\end{equation*}
+Hence:
+\begin{equation}
+v(P_c,O) = J_{c,i}\dot{q} \rightarrow \dot{q} = J_{c,i}^{\#}v(P_c,O)
+\end{equation}
+
+%\section{Priority resolution algorithm}
+%Due to the high complexity of the task we divided our control scheme into 3 main blocks:
+%\begin{enumerate}
+%	\item \textbf{Priority matrix:} to compute in a fast way the joint velocities executing the task ones, coming from the %prioritized stack of tasks.
+%	\item \textbf{Priority resolution algorithm:} to organize the stack of tasks accordingly to each ones' \textit{generalized cost}.
+%	This concept will be further explained below.
+%	\item \textbf{Control algorithm:} to merge both the above methods and generate a desired joint velocity.
+%\end{enumerate}
+
+\section{Priority resolution algorithm}
 In this framework we will define:
 \begin{enumerate}
 \item[-] $O$ the position of the obstacle in the workspace.
@@ -301,17 +339,24 @@ In this framework we will define:
 \item[-] \texttt{stack} the array of Jacobians associated to each task.
 \end{enumerate}
 To keep a solution which is consistent with respect to our problem, we need an efficient resolution of the priority assignment and a meaningful cost for each task.
-\subsubsection{Cost}
-Since in this application \textit{almost} each task is associated to the movement of a cartesian point, we used the \textbf{distance} of that point from the obstacle.
-About \textit{task 2}, associated to a cartesian orientation, we simply said it will have a constant cost computed as $d + 1$, so as to be always non-critical, this is due to the fact that we are not quite interested in the orientation task as we are in collision avoidance but we will also like that it is executed with a higher priority if we are in a normal operation point.
+\subsection{Generalized cost}
+In order to keep track of each task's priority, we need to organize our \texttt{stack}. Doing so requires to evaluate a cost function on the tasks for which the higher is the cost, the higher is the priority. Due to the fact that in this application all the tasks but the second, can be derived from the movement of a Cartesian point, we can use the distance of that particular point from the obstacle as our cost function.
 
-Note that many other choices could have be possible. Here a few that has been considered at the beginning:
+As already said, unfortunately, the second task is not associated with any point, thus a decision has to be made: since we are not really interested in the execution of this task, we can simply say its cost is $d+1$, where we recall that \textit{d} is the \emph{dangerous distance} from the obstacle.
+
+Doing so implies that this task will never overcome the others, which are associated with collision avoidance.
+
+
+%Since in this application \textit{almost} each task is associated to the movement of a Cartesian point, we used the \textbf{distance} of that point from the obstacle.
+%About \textit{task 2}, associated to a Cartesian orientation, we simply said it will have a constant cost computed as $d + 1$, so as to be always non-critical, this is due to the fact that we are not quite interested in the orientation task as we are in collision avoidance but we will also like that it is executed with a higher priority if we are in a normal operation point.
+
+Note that many other choices for the cost could have been possible. Here a few that has been considered at the beginning:
 \begin{list}{\textbf{Case:}}{}
 \item Project the distance from the obstacle onto the instantaneous direction of motion for each control point, keep second task's cost constant.
 \item Same as before but assign a control point to the midpoint of the third link to compute second task's cost.
 \item Add and remove from the stack the task associated with control points.
 \end{list}
-\subsubsection{Priority assignment}
+\subsection{Priority assignment}
 
 The assignment of the priority passes trough the reordering of the \texttt{stack} so as the task with priority $0$ will be the first element.
 In this case we want to reorder the tasks differently based on the position of their associated point in the space.
@@ -325,10 +370,10 @@ We divided the \texttt{stack} into 2 sub-vectors whose dimensions, if summed, ar
 \end{enumerate}
 This will allows us to prioritize not only using the \emph{cost} but also the position of a task in the \texttt{stack}.
 
-For example if we perform reordering using only the distance and all the control point are outside the \emph{dangerous} region except for one (e.g. $p_{c2}$), this will take over the priority of the cartesian positioning task even if we would like to still execute the desired trajectory. While if we perform the \emph{critic-dangerous} distinction, and initialize the cartesian positioning task to be always in \texttt{stack$_c$}, $p_{c2}$ will rise in the \texttt{stack}, up to the second position without overtaking the highest priority task.
+For example if we perform reordering using only the distance and all the control point are outside the \emph{dangerous} region except for one (e.g. $p_{c2}$), this will take over the priority of the Cartesian positioning task even if we would like to still execute the desired trajectory. While if we perform the \emph{critic-dangerous} distinction, and initialize the Cartesian positioning task to be always in \texttt{stack$_c$}, $p_{c2}$ will rise in the \texttt{stack}, up to the second position without overtaking the highest priority task.
 \subsection{Control algorithm}
 The control algorithm uses the block-scheme below.
-\begin{figure}[t]
+\begin{figure}[H]
 \centering
 \includegraphics[width = 1.2\linewidth]{./plots/ControlSchemeModel.pdf}
 \caption{Block scheme of the control architecture.}
@@ -339,7 +384,7 @@ Note that all the information about the other control points and tasks are inclu
 Those quantities have not been included since they are "known" at the control architecture's level and require no external reference.
 
 \section{Results}
-We organized the experiment accordingly with the distance of the end-effector from the obstacle and with its obstruction on the path. We simulated 3 different situations with 2 different control algorithms for a total of 6 different simulations.
+We organized the simulations accordingly with the distance of the end-effector from the obstacle and with its obstruction on the path. We simulated 3 different situations with 2 different control algorithms for a total of 6 different simulations.
 
 In particular we used for the control algorithms:
 \begin{enumerate}
@@ -353,6 +398,8 @@ While the simulations were divided into:
 \item \textbf{Near:} The obstacle is located near the path so as the end effector might get into the \emph{dangerous} region. However the most critical aspect comes from the fact that the last control point is inside the \emph{dangerous} region from the beginning.	
 \item \textbf{On path:} The obstacle is located directly on the path, thus the there is no feasible motion for the end effector that realizes exactly the task. 
 \end{enumerate}
+
+After that we simulated 2 application of the control scheme to cluttered environments, where the commanded trajectory was point-to-point motion along a linear path.
 
 \tablePlot[.33]{joint_angles}{Joint angles for the above cases:}
 \subsection{Far obstacle.}
@@ -377,20 +424,44 @@ An interesting fact comes from the values the joint velocities assume for the fi
 \tablePlot[.33]{control_points_distances}{Control points' distances for the above cases:}
 \subsection{Obstacle on path.}
 
-In this case the obstacle is placed directly on the path, and we can see that the error associated with the cartesian positioning task is order of magnitude higher than all the previous case. A good test and proof for our control scheme is the fact that however big was this error we completed recovered it, and as soon as it has been possible we converged back to the path.
+In this case the obstacle is placed directly on the path, and we can see that the error associated with the Cartesian positioning task is order of magnitude higher than all the previous case. A good test and proof for our control scheme is the fact that however big was this error we completed recovered it, and as soon as it has been possible we converged back to the path.
 
 An interesting fact is that in this case, our problem might seem more difficult to solve while is indeed easier to handle. We can see that the control points almost never interact with the obstacle, hence the main discontinuities come from the tasks 1 and 2. The only time the control points start being problematic, is with the first algorithm when the second point gets too near to the obstacle and this result in a spike in joint velocities which gets smoothed quite fast.
 
 \tablePlot[.33]{ee_task_error}{ee task error for the above cases:}
+\tablePlot{elbow_task_error}{Elbow task error for the above cases:}
+\subsection{Cluttered environment.}
+\begin{figure}[H]
+\centering
+\subfloat[2 obstacles]{\includegraphics[scale=.2]{./plots/2_obst.png}}\hfill
+\subfloat[3 obstacles]{\includegraphics[scale=.2]{./plots/3_obst.png}}
+\caption{Cluttered environments: 2 \& 3 obstacles}
+\end{figure}
+
+From these 2 simulation it is clear how this controller manages to keep the minimum distance among all the obstacles within an acceptable range. As a matter of facts, it rarely drops below the dangerous value.
+
+\begin{figure}[H]
+\label{2obstDist}
+\subfloat[Control points' distances from $1^{st}$ obstacle]{\imgG{2obs}{control_points_distances.eps}{.33}}\hfill
+\subfloat[Control points' distances from $2^{nd}$ obstacle]{\imgG{2obs}{control_points_distances_2.eps}{.33}}\hfill
+\subfloat[Minimum distance among all the obstacle]{\imgG{2obs}{min_2.eps}{.33}}
+\caption{2 obstacles case}
+\end{figure}
+
+\begin{figure}[H]
+\label{3obstDist}
+\subfloat[Control points' distances from $1^{st}$ obstacle]{\imgG{3obs}{control_points_distances.eps}{.5}}\hfill
+\subfloat[Control points' distances from $2^{nd}$ obstacle]{\imgG{3obs}{control_points_distances_2.eps}{.5}}\\
+\subfloat[Control points' distances from $3^{rd}$ obstacle]{\imgG{3obs}{control_points_distances_3.eps}{.5}}\hfill
+\subfloat[Minimum distance among all the obstacle]{\imgG{3obs}{min_3.eps}{.5}}
+\caption{3 obstacles case}
+\end{figure}
+
 \section{Conclusion}
 
 Those simulations provide quite interesting results which not always are overall decisive. A little note has to be made, using the first control algorithm, whenever a control point is outside the \emph{dangerous} region we are giving \emph{zero} velocity as a reference, thus the generally worst result. The whole body acts as if it is stiffer than it actually is, trying to keep fix the control points.
 
 From an operative point of view it is clear why the prioritization of task is mandatory and how powerful it is the resulting flexibility in the control strategy. On the other hand some doubts arise on how effective it is to exploit the redundancies of a robot from the very beginning of a control action. 
 For sure we can say that prioritization of tasks and null-space exploitation are two incredibly powerful tools which have to be handled carefully.
-\tablePlot{elbow_task_error}{Elbow task error for the above cases:}
 
-%\bibliography{sample}
-%\bibliographystyle{ieeetr}
-\tableofcontents
 \end{document}
