@@ -143,7 +143,7 @@ x =
 \begin{bmatrix}
 a_1 \\ a_2
 \end{bmatrix}^\#F
-\begin{pmatrix}(1)
+\begin{pmatrix}
 b_1 \\ b_2
 \end{pmatrix}
 =\begin{bmatrix}
@@ -172,7 +172,7 @@ the task.
 
 From now on we will refer to the general case and therefore we are going to develop a tool similar to the rref in order to obtain the Task Priority Matrix.
 First is useful to use the QR decomposition of the augmented matrix \textbf{A} to compute its pseudoinverse.
-\[(3)
+\[
 A^T = Q\begin{bmatrix}
 R\\0
 \end{bmatrix}
@@ -195,7 +195,7 @@ From the properties of the QR decomposition, the diagonal blocks $\textbf{R}_{\t
 Since the temporary \textbf{F} matrix is already upper triangular, Gauss Jordan elimination requires 2 steps for each task:
 \begin{itemize}
 \item First we need to set the pivot matrices to the Identity matrix by multiplying each block row with the pseudoinverse of its pivot matrix.
-\item Then, all elements in the column block outside the diagonal should be set to zero. By considering the structure of the temporary matrix, and considering i<j, to nullify a block (i,j) by subtracting to the i-th row block the block (i,j) times the j-th row block. If after the first step the j-th pivot was an Identity matrix, then all elements in the block (i,j) are zeroed.
+\item Then, all elements in the column block outside the diagonal should be set to zero. By considering the structure of the temporary matrix, and considering i$<$j, to nullify a block (i,j) by subtracting to the i-th row block the block (i,j) times the j-th row block. If after the first step the j-th pivot was an Identity matrix, then all elements in the block (i,j) are zeroed.
 \end{itemize}
 When all the steps are made for each task, then in order to get the Task Priority Matrix we will simply need to transpose the last temporary matrix obtained by the algorithm.
 It is important to notice that in the first step just described we required the inverse of the pivot matrix, but since the k-th pivot matrix is only not singular if the k-th task is not singular and linearly independent from the higher order tasks we might not be able to do the inversion. Therefore, instead of the simple inversion we can use the pseudoinverse of the pivot matrix and in a damped version. Doing this we can obtain damped solutions that are better and smoother when we are reaching tasks' singularities.
@@ -293,7 +293,11 @@ For this particular manipulator we chose 3 control points:
 \end{bmatrix}
 \] where $d_1$ is given in the DH table.
 \end{enumerate}
-
+\begin{figure}[H]
+\centering
+\includegraphics[scale=.3]{./plots/KUKA_CPS.png}
+\caption{Control points' positions.}
+\end{figure}
 \subsubsection{Collision avoidance}
 
 The control law we want to implement is the same we used for the end-effector, but since that solution refers to a task which is 3 dimensional, we have to find a way to reduce it to a mono-dimensional task.
@@ -394,6 +398,8 @@ While the simulations were divided into:
 \item \textbf{On path:} The obstacle is located directly on the path, thus the there is no feasible motion for the end effector that realizes exactly the task. 
 \end{enumerate}
 
+After that we simulated 2 application of the control scheme to cluttered environments, where the commanded trajectory was point-to-point motion along a linear path.
+
 \tablePlot[.33]{joint_angles}{Joint angles for the above cases:}
 \subsection{Far obstacle.}
 Although this might seem an useless case, it helps us to enlighten some fundamental differences between the two algorithm and unique characteristics of the prioritized solution. 
@@ -422,15 +428,26 @@ In this case the obstacle is placed directly on the path, and we can see that th
 An interesting fact is that in this case, our problem might seem more difficult to solve while is indeed easier to handle. We can see that the control points almost never interact with the obstacle, hence the main discontinuities come from the tasks 1 and 2. The only time the control points start being problematic, is with the first algorithm when the second point gets too near to the obstacle and this result in a spike in joint velocities which gets smoothed quite fast.
 
 \tablePlot[.33]{ee_task_error}{ee task error for the above cases:}
+\tablePlot{elbow_task_error}{Elbow task error for the above cases:}
+\subsection{Cluttered environment: \textit{2 obstacles}}
+\begin{figure}[H]
+\centering
+\includegraphics[scale=.3]{./plots/2_obst.png}
+\caption{Cluttered environments: 2 obstacles}
+\end{figure}
+
+\subsection{Cluttered environment: \textit{3 obstacles}}
+\begin{figure}[H]
+\centering
+\includegraphics[scale=.3]{./plots/3_obst.png}
+\caption{Cluttered environments: 3 obstacles}
+\end{figure}
+
 \section{Conclusion}
 
 Those simulations provide quite interesting results which not always are overall decisive. A little note has to be made, using the first control algorithm, whenever a control point is outside the \emph{dangerous} region we are giving \emph{zero} velocity as a reference, thus the generally worst result. The whole body acts as if it is stiffer than it actually is, trying to keep fix the control points.
 
 From an operative point of view it is clear why the prioritization of task is mandatory and how powerful it is the resulting flexibility in the control strategy. On the other hand some doubts arise on how effective it is to exploit the redundancies of a robot from the very beginning of a control action. 
 For sure we can say that prioritization of tasks and null-space exploitation are two incredibly powerful tools which have to be handled carefully.
-\tablePlot{elbow_task_error}{Elbow task error for the above cases:}
-
-%\bibliography{sample}
-%\bibliographystyle{ieeetr}
 
 \end{document}
