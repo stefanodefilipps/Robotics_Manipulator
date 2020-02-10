@@ -6,6 +6,7 @@
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \usepackage{xcolor}
+
 \newcommand{\todo}{\textcolor{red}{\textbf{TODO:}}}
 \newcommand{\dof}[1]{\begin{itemize}
 \item[-]\textcolor{blue}{\textbf{#1 DOFs}}
@@ -60,20 +61,20 @@ We push constantly the control point away from the obstacle so as to be sure the
 \end{frame}
 
 \begin{frame}{Collision avoidance. How?}
-\begin{columns}
-\begin{column}{.5\textwidth}
-\begin{block}{2. How do we push?}
-We change approach whether the control point is on the e-e or on the structure:
-\begin{itemize}
-\item For the end-effector we add a cartesian velocity pointing away from the obstacle
-\item For the ones on the structure we add assign a cartesian velocity projected along the distance from the obstacle (\textcolor{red}{1 DOF}).
-\end{itemize}
-\end{block}
-\end{column}
-\begin{column}{.5\textwidth}
-\todo figure of the repulsive velocity
-\end{column}
-\end{columns}
+	\begin{columns}
+		\begin{column}{.5\textwidth}
+			\begin{block}{2. How do we push?}
+			We change approach whether the control point is on the e-e or on the structure:
+				\begin{itemize}
+				\item For the end-effector we add a cartesian velocity pointing away from the obstacle
+				\item For the ones on the structure we add assign a cartesian velocity projected along the distance from the obstacle (\textcolor{red}{1 DOF}).
+				\end{itemize}
+			\end{block}
+		\end{column}
+		\begin{column}{.5\textwidth}
+			\todo figure of the repulsive velocity
+		\end{column}
+	\end{columns}
 \end{frame}
 
 \begin{frame}{Tasks}
