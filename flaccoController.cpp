@@ -193,7 +193,9 @@ bool FlaccoController::taskReorder(Task<Eigen::MatrixXf>& stack,const std::vecto
 	//distT.setIndices(stackInd);// <- we will use the standard order
 
 	/*REORDERING*/
-	int initial{danger+1}, final{sizeMax};
+	int initial{danger+1}, final{sizeMax}; 
+	// danger+1 is the number of tasks w/ priority lower than the cartesian task
+	// sizeMax is the total size of the stack
 	for (int j = 0; j < 2; ++j) {
 		// first iteration is for the relaxed sub-vector
 		// second one is for the critic sub-vector
@@ -205,7 +207,7 @@ bool FlaccoController::taskReorder(Task<Eigen::MatrixXf>& stack,const std::vecto
 		    float min{distT[i]};
 		    int minK{i};
 			for (int k = i; k < final; ++k) {
-                // Find the minimum
+                	// Find the minimum
 			    if(distT[k] < min) {
 			        min = distT[k];
 			        minK = k;
@@ -213,17 +215,15 @@ bool FlaccoController::taskReorder(Task<Eigen::MatrixXf>& stack,const std::vecto
 			}
 			// Replace the minimum
 			if(min < distance_warning) {
-				//stack.goUpTo(minK, i);// <- we will only reorder distT and push its indices into stack
 				distT.goUpTo(minK, i);
 				switched = true;
 			} //else switched = false; 
-            // update only if it is in the first iteration on j
-            // i.e. if we are sorting the non critical vector
+            	// update only if it is in the first iteration on j
+            	// i.e. if we are sorting the non critical vector
 			danger += distT[i] < distance_critic && j == 0;
 		}
 		// reset the values so that we sort from the beginning up to danger
-		// that means we include also the critic tasks coming from the non
-		// critical part
+		// that means we include also the critic tasks coming from the non critical part
 		initial = 0;
 		final = danger;
 	}

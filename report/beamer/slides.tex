@@ -6,6 +6,35 @@
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \usepackage{xcolor}
+\usepackage{algpseudocode}
+\usepackage{listings}
+\usepackage{adjustbox}
+ 
+%\definecolor{codegreen}{rgb}{0,0.6,0}
+%\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+%\definecolor{codepurple}{rgb}{0.58,0,0.82}
+%\definecolor{backcolour}{rgb}{1,1,1}
+ 
+%\lstdefinestyle{mystyle}{
+%    backgroundcolor=\color{backcolour},   
+%    commentstyle=\color{codegreen},
+%    keywordstyle=\color{blue},
+%    numberstyle=\tiny\color{codegray},
+%    stringstyle=\color{codepurple},
+%    basicstyle=\ttfamily\footnotesize,
+%    breakatwhitespace=false,         
+%    breaklines=true,                 
+%    captionpos=b,                    
+%    keepspaces=true,                 
+%    numbers=left,                    
+%    numbersep=5pt,                  
+%    showspaces=false,                
+%    showstringspaces=false,
+%    showtabs=false,                  
+%    tabsize=2
+%}
+ 
+%\lstset{style=mystyle}
 
 \newcommand{\todo}{\textcolor{red}{\textbf{TODO:}}}
 \newcommand{\dof}[1]{\begin{itemize}
@@ -29,9 +58,95 @@
 \titlepage
 \end{frame}
 
-%\begin{frame}
-%\tableofcontents
-%\end{frame}
+\begin{frame}{Redundancy resolution problem}
+Find Robot command in order to execute a series of tasks. The problem can be formalized as:
+\[
+Ax = b
+\]
+with $A = \begin{bmatrix}
+A_1^T & A_2^T & \dots & A_l^T 
+\end{bmatrix}$ and $
+b = \begin{bmatrix}
+b_1^T & b_2^T & \dots & b_l^T 
+\end{bmatrix}
+$.
+\[
+\sum_{k=1}^{l}m_k \leq n
+\]
+\end{frame}
+
+\begin{frame}{How to solve redundancy?}
+The non prioritized solution is $\overline{x} = A^{\#}b$ if tasks not l.i. we need to accommodate conflicting tasks
+\begin{enumerate}
+\item Siciliano and Slotine approach: task projection in null space of higher order task
+\item Flacco Matrix: separation of redundancy resolution from assignment of correct order
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{Flacco Matrix}
+From base solution we can extrapolate:
+\begin{itemize}
+\item contribution of each task
+\item task null space
+\end{itemize}
+useful information for reordering.
+
+\textcolor{red}{IDEA:} find a matrix F that allows us to get these information and impose correct priority
+\[
+x = A^{\#}Fb
+\]
+\textcolor{red}{RESULTS:} applying F we should get same solution as Siciliano and Slotine.
+\end{frame}
+
+\begin{frame}{What is the structure of $F$?}
+Generally F has the following structure:
+\begin{itemize}
+\item It is block lower triangular
+\item It has I on diagonal if task l.i. to higher priority task
+\item It has 0 blocks on diagonal if task l.d. to higher priority tasks
+\item It has coefficient of dependency in the left side of rows
+\end{itemize}
+\end{frame}
+
+\begin{frame}{How to compute $F$ and final solution?}
+We can use Gauss Jordan elimination with pivot square matrices
+\begin{columns}
+\begin{column}{.5\textwidth}
+\begin{block}{Algorithm}
+\begin{algorithmic}[1]
+\State Use QR decomposition on A $\rightarrow A^{\#} = QR^{-T}$ 
+\State Initialize $F$
+\ForAll{$row_j$}
+\State $row_j \gets P^{\#}*row_j$
+\State $row_i \gets row_i - block_{ij}*row_j$ $(i < j)$
+\EndFor
+\State $F \gets F^T$
+\State $x \gets (QR^{-T}*F*b)$
+\end{algorithmic}
+\end{block}
+\end{column}
+\begin{column}{.5\textwidth}
+\[
+\overline{F} = \bordermatrix{
+~& m_1 & m_2 & & m_l\cr
+m_1 & R_{11} & \star & \dots & \star \cr
+m_2 & 0 & R_{22} & \dots & \star \cr
+~ & 0 & 0 & \dots & \star \cr
+m_l & 0 & 0 & \dots & R_{ll}
+}
+\]
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{How to compute $F$: code}
+\begin{block}{Code}
+\begin{adjustbox}{width=\textwidth , height=.2\textwidth}
+\lstinputlisting[language=C++, firstline=98, lastline=113]{../../flaccoController.cpp}
+\end{adjustbox}
+\end{block}
+\end{frame}
 
 \begin{frame}{Why priority?}
 \begin{itemize}
@@ -46,16 +161,21 @@
 \begin{columns}
 \begin{column}{.5\textwidth}
 \begin{block}{1. Control points}
-We push constantly the control point away from the obstacle so as to be sure they will never get in contact!
-\textbf{\textcolor{red}{How do we handle priority?}}
-\begin{itemize}
-\item When the control point is too near the priority lowers (i.e. becomes more important)
-\item As soon as the distance exit the \emph{dangerous} region the priority rise again
-\end{itemize}
+Distributing a certain amount of points along the structure of the manipulator we can keep track of its distance from the obstacles and how it changes with respect to the pose.
+\end{block}
+\begin{block}{2. Collision avoidance}
+Whenever a control point is within a certain radius from the surface of the obstacles we start to push it away until we move in a "safe zone".
+%\textbf{\textcolor{red}{How do we handle priority?}}
+%\begin{itemize}
+%\item When the control point is too near the priority lowers (i.e. becomes more important)
+%\item As soon as the point exit the \emph{dangerous} region the priority rise again
+%\end{itemize}
 \end{block}
 \end{column}
 \begin{column}{.5\textwidth}
-\todo Figure of the KUKA and its control points
+\begin{figure}[H]
+\includegraphics[scale=.25]{./images/KUKA_CPS.png}
+\end{figure}
 \end{column}
 \end{columns}
 \end{frame}
@@ -66,8 +186,8 @@ We push constantly the control point away from the obstacle so as to be sure the
 			\begin{block}{2. How do we push?}
 			We change approach whether the control point is on the e-e or on the structure:
 				\begin{itemize}
-				\item For the end-effector we add a cartesian velocity pointing away from the obstacle
-				\item For the ones on the structure we add assign a cartesian velocity projected along the distance from the obstacle (\textcolor{red}{1 DOF}).
+				\item For the end-effector we add to the task velocity, a cartesian velocity pointing away from the obstacle.
+				\item For the ones on the structure we add the projection of a cartesian velocity, along the distance of the control point from the obstacle (\textcolor{red}{1 DOF}).
 				\end{itemize}
 			\end{block}
 		\end{column}
@@ -91,28 +211,19 @@ In the end we saturated 6 out of all the 7 DOFs of the manipulator.
 \end{frame}
 
 \begin{frame}{Task 1: Cartesian positioning}
-\begin{columns}
-\begin{column}{.5\textwidth}
 Cartesian positioning means we want the end effector to execute a given trajectory  in $\Bbb R^3$.
 
 \begin{block}{Path used:}
 \begin{itemize}
 \item A linear path
-\item A circular path 
+\item A point-to-point motion path
 \end{itemize}
 \end{block}
 
 The associated jacobian $J_1$ is the analytical jacobian of the direct kinematics.
-\end{column}
-\begin{column}{.5\textwidth}
-\todo pic
-\end{column}
-\end{columns}
 \end{frame}
 
 \begin{frame}{Task 1: Collision avoidance}
-\begin{columns}
-\begin{column}{.5\textwidth}
 \begin{itemize}
 \item We have \textbf{4} tasks occupying \textbf{6} DOF and we can't another cartesian positioning task. How is it performed?
 \end{itemize}
@@ -123,11 +234,6 @@ Add another repulsive velocity to the desired one, pointing away from the obstac
 \item In this way the \emph{Flacco Matrix} will handle the \textcolor{red}{exact} joint velocities so as to execute the \textcolor{red}{sum} of the two.
 \item This won't change the jacobian of the task.
 \end{itemize}
-\end{column}
-\begin{column}{.5\textwidth}
-\todo pic
-\end{column}
-\end{columns}
 \end{frame}
 
 \begin{frame}{Repulsive velocity}
@@ -143,12 +249,13 @@ We want the repulsive velocity to satisfy a certain amount of properties:
 \end{block} 
 Hence:
 \[
-v(P,O) = \frac{V_{max}}{1+e^{(\norm{D(P,O)}(2\/\rho)-1)\alpha}}
+v(P,O) = \frac{V_{max}}{1+e^{(\norm{D(P,O)}(2\diagup\rho)-1)\alpha}}
 \]
 \end{column}
 \begin{column}{.5\textwidth}
-\todo right $v_{max}$
-\includegraphics[scale=.75]{./images/repulsive_velocity.pdf}
+\begin{figure}[H]
+\includegraphics[scale=.45]{./images/repulsive_velocity.pdf}
+\end{figure}
 \end{column}
 \end{columns}
 \end{frame}
@@ -173,12 +280,15 @@ Denoting $p = \frac{p_{l,z}}{\norm{p_l}}$ we can get the expression of the assoc
 \begin{column}{.5\textwidth}
 We chose the following:
 \begin{itemize}
-\item \todo
-\item \todo
+\item The end-effector
+\item The origin of the DH reference frame associated with the $4^{th}$ joint
+\item The third is on the second link axis at a given distance from the origin of the DH reference frame associated to the 2$^{nd}$ joint (i.e. half link axis' length off the shoulder)
 \end{itemize}
 \end{column}
 \begin{column}{.5\textwidth}
-\todo pic
+\begin{figure}[H]
+\includegraphics[scale=.25]{./images/KUKA_CPS.png}
+\end{figure}
 \end{column}
 \end{columns}
 \end{frame}
@@ -188,7 +298,7 @@ As already introduced we can't perform collision avoidance for the control point
 \begin{columns}
 \begin{column}{.5\textwidth}
 \begin{block}{PROJECT!}
-We can project the same repulsive velocity we used on task 1, on the distance from the obstacle, obtaining a "repulsive speed" we will call $v$ \todo check on report.
+We can project the same repulsive velocity we used on task 1, on the distance from the obstacle, obtaining a "repulsive speed" we will call $v$.
 \end{block}
 \end{column}
 \begin{column}{.5\textwidth}
@@ -200,12 +310,59 @@ $J_i$ is the jacobian at the i-th control point.
 \end{columns}
 \end{frame}
 
-\begin{frame}{Code}
+\begin{frame}{Reordering}
 
+\begin{block}{Stack}
+We organized the tasks in a vector (here \texttt{stack}) where the first element is the lower priority one and the last is the higher priority one.
+\end{block}
+This is divided in two parts:
+\begin{enumerate}
+\item The first part contains the task which are defined \textit{critic}.
+\item The second one contains the tasks whose cost is high enough to be in a safe position.
+\end{enumerate}
+
+\textcolor{blue}{Criticality}
+
+In order to evaluate which position a task should take within the \texttt{stack}, we need a method to compute a "general cost".
 \end{frame}
 
-\begin{frame}{Results}
+\begin{frame}{Reordering: cost \& execution}
+\begin{columns}
 
+\begin{column}{.4\textwidth}
+\begin{itemize}
+\item In this application almost each task is associated with a control point so an easy cost function is the minimum distance of the points from the obstacles within the workspace.
+\item The second task is not easy to associate a control point with, so we assigned to it a constant cost which is high enough to never make it critical.
+\end{itemize}
+\end{column}
+
+\begin{column}{.6\textwidth}
+The execution of the reordering algorithm is performed as such:
+\begin{block}{Algorithm}
+\begin{algorithmic}[1]
+\ForAll{non critic tasks}
+\State reorder by cost
+\If{any task cost $\leq$ critic distance}
+\State augment number of critic tasks
+\EndIf
+\EndFor
+\ForAll{critic tasks}
+\State reorder by cost
+\EndFor
+\end{algorithmic}
+\end{block}
+\end{column}
+
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Reordering: code}
+\begin{block}{Code}
+\begin{adjustbox}{width=\textwidth}
+\lstinputlisting[language=C++, firstline=195, lastline=229]{../../flaccoController.cpp}
+\end{adjustbox}
+\end{block}
 \end{frame}
 
 \end{document}
