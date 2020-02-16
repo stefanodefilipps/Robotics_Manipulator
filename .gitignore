@@ -24,6 +24,11 @@ MAKEFILE
 *.snm
 *.out
 CMake*
+*.vrb
+report/report_comments.pdf
+*vectarrow.m
+~*
+*.odt
 
 
 

@@ -9,6 +9,7 @@
 \usepackage{algpseudocode}
 \usepackage{listings}
 \usepackage{adjustbox}
+\usepackage{subfig}
  
 %\definecolor{codegreen}{rgb}{0,0.6,0}
 %\definecolor{codegray}{rgb}{0.5,0.5,0.5}
@@ -43,6 +44,8 @@
 \newcommand{\norm}[1]{\parallel{#1}\parallel}
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\diff}[2]{\frac{\partial{#1}}{\partial{#2}}}
+\newcommand{\imgG}[3]{\includegraphics[scale={#3}]{../tex/plots/#1/#2}}
+\newcommand{\img}[4]{\includegraphics[scale={#4}]{../tex/plots/#1/#2/#3}}
 
 \author[Stefano, Marco]{Stefano De Filippis \& Marco Menchetti}
 \title[ROB2 project]{Task priority assignment with collision avoidance}
@@ -192,7 +195,9 @@ Whenever a control point is within a certain radius from the surface of the obst
 			\end{block}
 		\end{column}
 		\begin{column}{.5\textwidth}
-			\todo figure of the repulsive velocity
+			\begin{figure}[H]
+				\includegraphics[width = .7\textwidth]{images/repulsive_velocity_vectorial.pdf}
+			\end{figure}
 		\end{column}
 	\end{columns}
 \end{frame}
@@ -359,10 +364,87 @@ The execution of the reordering algorithm is performed as such:
 \begin{frame}[fragile]
 \frametitle{Reordering: code}
 \begin{block}{Code}
-\begin{adjustbox}{width=\textwidth}
+\begin{adjustbox}{width=.7\textwidth, height=.2\textwidth}
 \lstinputlisting[language=C++, firstline=195, lastline=229]{../../flaccoController.cpp}
 \end{adjustbox}
 \end{block}
+\end{frame}
+
+\begin{frame}{Results: angular velocity interesting cases}
+\begin{columns}
+\begin{column}{.5\textwidth}
+\begin{figure}[H]
+\img{far}{notAlways}{joint_velocities.eps}{.4}
+\caption{obstacle: \textbf{far}, control points not always active}
+\end{figure}
+\end{column}
+\begin{column}{.5\textwidth}
+\begin{figure}[H]
+\img{far}{always}{joint_velocities.eps}{.4}
+\caption{obstacle: \textbf{far}, control points always active}
+\end{figure}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Results: angular velocity interesting cases}
+\begin{columns}
+\begin{column}{.5\textwidth}
+\begin{figure}[H]
+\img{on}{notAlways}{joint_velocities.eps}{.4}
+\caption{obstacle: \textbf{on}, control points not always active}
+\end{figure}
+\end{column}
+\begin{column}{.5\textwidth}
+\begin{figure}[H]
+\img{on}{always}{joint_velocities.eps}{.4}
+\caption{obstacle: \textbf{on}, control points always active}
+\end{figure}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Results: ee task error in "obstacle on path" case}
+\begin{columns}
+\begin{column}{.5\textwidth}
+\begin{figure}[H]
+\img{on}{notAlways}{ee_task_error.eps}{.4}
+\caption{obstacle: \textbf{on}, control points not always active}
+\end{figure}
+\end{column}
+\begin{column}{.5\textwidth}
+\begin{figure}[H]
+\img{on}{always}{ee_task_error.eps}{.4}
+\caption{obstacle: \textbf{on}, control points always active}
+\end{figure}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Results: cluttered environment}
+\begin{figure}[H]
+\label{3obstDist}
+\imgG{3obs}{control_points_distances.eps}{.5}
+\caption{Control points' distances from $1^{st}$ obstacle}
+\end{figure}
+\end{frame}
+\begin{frame}{Results: cluttered environment}
+\begin{figure}[H]
+\imgG{3obs}{control_points_distances_2.eps}{.5}
+\caption{Control points' distances from $2^{nd}$ obstacle}
+\end{figure}
+\end{frame}
+\begin{frame}{Results: cluttered environment}
+\begin{figure}[H]
+\imgG{3obs}{control_points_distances_3.eps}{.5}
+\caption{Control points' distances from $3^{rd}$ obstacle}
+\end{figure}
+\end{frame}
+\begin{frame}{Results: cluttered environment}
+\begin{figure}[H]
+\imgG{3obs}{min_3.eps}{.5}
+\caption{Minimum distance among all the obstacle}
+\end{figure}
 \end{frame}
 
 \end{document}
