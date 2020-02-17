@@ -68,10 +68,10 @@ Ax = b
 \]
 with $A = \begin{bmatrix}
 A_1^T & A_2^T & \dots & A_l^T 
-\end{bmatrix}$ and $
+\end{bmatrix}^T$ and $
 b = \begin{bmatrix}
 b_1^T & b_2^T & \dots & b_l^T 
-\end{bmatrix}
+\end{bmatrix}^T
 $.
 \[
 \sum_{k=1}^{l}m_k \leq n
@@ -118,10 +118,10 @@ We can use Gauss Jordan elimination with pivot square matrices
 \begin{block}{Algorithm}
 \begin{algorithmic}[1]
 \State Use QR decomposition on A $\rightarrow A^{\#} = QR^{-T}$ 
-\State Initialize $F$
+\State Initialize $F = R$
 \ForAll{$row_j$}
-\State $row_j \gets P^{\#}*row_j$
-\State $row_i \gets row_i - block_{ij}*row_j$ $(i < j)$
+\State $row_j \gets R_{jj}^{\#}*row_j$
+\State $row_i \gets row_i - block_{ij}*row_j$ $(\forall i < j)$
 \EndFor
 \State $F \gets F^T$
 \State $x \gets (QR^{-T}*F*b)$
@@ -130,7 +130,7 @@ We can use Gauss Jordan elimination with pivot square matrices
 \end{column}
 \begin{column}{.5\textwidth}
 \[
-\overline{F} = \bordermatrix{
+F = \bordermatrix{
 ~& m_1 & m_2 & & m_l\cr
 m_1 & R_{11} & \star & \dots & \star \cr
 m_2 & 0 & R_{22} & \dots & \star \cr
@@ -157,6 +157,7 @@ m_l & 0 & 0 & \dots & R_{ll}
 \item Most problems \textcolor{red}{can't} be solved by just one task.
 \item Error is kept on the tasks that \textcolor{red}{can't} be executed	\textbf{EXACTLY} 
 \item More natural and smoother behavior.
+\item Collision avoidance can be handled separately from the main problem.
 \end{itemize}
 \end{frame}
 
@@ -181,25 +182,6 @@ Whenever a control point is within a certain radius from the surface of the obst
 \end{figure}
 \end{column}
 \end{columns}
-\end{frame}
-
-\begin{frame}{Collision avoidance. How?}
-	\begin{columns}
-		\begin{column}{.5\textwidth}
-			\begin{block}{2. How do we push?}
-			We change approach whether the control point is on the e-e or on the structure:
-				\begin{itemize}
-				\item For the end-effector we add to the task velocity, a cartesian velocity pointing away from the obstacle.
-				\item For the ones on the structure we add the projection of a cartesian velocity, along the distance of the control point from the obstacle (\textcolor{red}{1 DOF}).
-				\end{itemize}
-			\end{block}
-		\end{column}
-		\begin{column}{.5\textwidth}
-			\begin{figure}[H]
-				\includegraphics[width = .7\textwidth]{images/repulsive_velocity_vectorial.pdf}
-			\end{figure}
-		\end{column}
-	\end{columns}
 \end{frame}
 
 \begin{frame}{Tasks}
@@ -305,24 +287,27 @@ As already introduced we can't perform collision avoidance for the control point
 \begin{block}{PROJECT!}
 We can project the same repulsive velocity we used on task 1, on the distance from the obstacle, obtaining a "repulsive speed" we will call $v$.
 \end{block}
-\end{column}
-\begin{column}{.5\textwidth}
 \begin{equation*}
 v = \eta^T\dot{r_{o}} = \eta^T J_i\dot{q} = J_{c,i}\dot{q}
 \end{equation*}
 $J_i$ is the jacobian at the i-th control point.
 \end{column}
+\begin{column}{.5\textwidth}
+			\begin{figure}[H]
+				\includegraphics[width = .7\textwidth]{images/repulsive_velocity_vectorial.pdf}
+			\end{figure}
+		\end{column}
 \end{columns}
 \end{frame}
 
 \begin{frame}{Reordering}
 
 \begin{block}{Stack}
-We organized the tasks in a vector (here \texttt{stack}) where the first element is the lower priority one and the last is the higher priority one.
+We organized the tasks in a vector (here \texttt{stack}) where the first element is the lowest priority one and the last is the highest priority one.
 \end{block}
 This is divided in two parts:
 \begin{enumerate}
-\item The first part contains the task which are defined \textit{critic}.
+\item The first part contains the task which are defined \textit{critical}.
 \item The second one contains the tasks whose cost is high enough to be in a safe position.
 \end{enumerate}
 
@@ -345,13 +330,14 @@ In order to evaluate which position a task should take within the \texttt{stack}
 The execution of the reordering algorithm is performed as such:
 \begin{block}{Algorithm}
 \begin{algorithmic}[1]
-\ForAll{non critic tasks}
+\State Initialize the \texttt{stack}
+\ForAll{non critical tasks}
 \State reorder by cost
-\If{any task cost $\leq$ critic distance}
-\State augment number of critic tasks
+\If{any task cost $\leq$ critical distance}
+\State augment number of critical tasks
 \EndIf
 \EndFor
-\ForAll{critic tasks}
+\ForAll{critical tasks}
 \State reorder by cost
 \EndFor
 \end{algorithmic}
